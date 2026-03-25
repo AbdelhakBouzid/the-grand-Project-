@@ -1,55 +1,66 @@
-# EduWorld Architecture (Phase 1)
+# EduWorld Architecture (Phase 2)
 
 ## System overview
 EduWorld uses a monorepo with:
-- `apps/web`: Next.js app-router frontend (i18n-ready, RTL/LTR-ready HTML attrs).
-- `apps/api`: NestJS API-first backend.
+- `apps/web`: Next.js app-router frontend (phase pages for feed/groups/resources/exams).
+- `apps/api`: NestJS API-first backend with RBAC + account-status restrictions.
 - PostgreSQL for source of truth via Prisma.
 - Redis reserved for cache/jobs.
-- S3-compatible object storage for verification documents.
+- S3-compatible object storage for verification documents and future resource uploads.
 
-## Auth flow
+## Auth + access model
 1. User signs up with email/password via `POST /auth/signup`.
 2. Password stored using Argon2id.
 3. API issues short-lived access token + longer refresh token.
-4. Access token is used in `Authorization: Bearer` for protected APIs.
-5. User account starts in `pending` status until verification review.
+4. JWT auth guard protects private routes.
+5. `ApprovedAccountGuard` gates community sections to approved users while still allowing privileged trust/safety roles:
+   - reviewer
+   - moderator
+   - super_admin
+6. `RolesGuard` continues to enforce role-specific operations.
 
-## Verification workflow
-1. User selects institution or submits institution request.
-2. User submits verification request with one or more documents.
-3. Files are validated (MIME + size), then uploaded to object storage.
-4. Verification request remains `pending`.
-5. Reviewer accesses dashboard endpoints, reviews, and sets action:
-   - approve
-   - reject
-   - request_more_info
-6. Approve/reject updates user account status and records audit log.
+## Phase 2 domain modules
 
-## File storage strategy
-- `StorageService` abstracts object store interactions.
-- Current implementation uploads to S3-compatible bucket (MinIO in local dev).
-- Document metadata and checksum are persisted in `verification_documents`.
-- Access logs table exists (`document_access_logs`) for future sensitive access auditing.
+### Feed, comments, reactions
+- `FeedModule` exposes `/feed` routes.
+- Post listing supports pagination and keyword search (`q`).
+- Comment listing supports pagination.
+- Reaction endpoint upserts user reaction and returns grouped totals by type.
 
-## Roles and permissions
-Roles:
-- student
-- teacher
-- institution_admin
-- reviewer
-- moderator
-- super_admin
+### Groups + membership
+- `GroupsModule` exposes `/groups` routes.
+- Group listing supports pagination and name search.
+- Membership endpoint creates membership idempotently.
 
-RBAC:
-- JWT auth guard for protected routes.
-- `@Roles` decorator + `RolesGuard` for privileged reviewer endpoints.
-- Reviewer endpoints restricted to `reviewer` and `super_admin`.
+### Educational resources + file attachments
+- `ResourcesModule` exposes `/resources` routes.
+- Resource listing supports pagination and title search.
+- Resource create endpoint accepts attached file URLs (`fileUrls`) and stores in `resource_files`.
 
-## Future scaling notes
-- Add queue-backed antivirus/scanning and OCR prechecks for docs.
-- Partition hot tables (posts, notifications, audit logs).
-- Add read replicas and caching layers.
-- Add CDN + signed URLs for object access.
-- Add tenant-like institution-level policy packs.
-- Expand i18n to runtime locale negotiation and translated content fields.
+### Exam archive resources
+- `ExamsModule` exposes `/exam-archive` routes.
+- Supports pagination with `subject`/`year` filters.
+- Create operation restricted to teacher/institution_admin/super_admin.
+
+### Notifications
+- `NotificationsModule` exposes `/notifications`.
+- Users fetch paginated personal notifications and mark items as read.
+
+### Basic moderation reports
+- `ModerationModule` exposes `/moderation/reports`.
+- Approved users can file reports against targets.
+- Moderators/reviewers/super-admin can list report queue.
+
+## Data consistency and API conventions
+- Route naming follows existing resource-oriented style.
+- Pagination pattern (`page`, `limit`) is applied across Phase 2 lists.
+- Search filters are optional and scoped by domain (`q`, `subject`, `year`).
+- New modules reuse existing Prisma models and RBAC decorators/guards.
+
+## Phase 3 boundary
+Phase 2 intentionally stops at basic CRUD/listing workflows. Remaining Phase 3 work:
+- moderation action workflows (enforcement decisions, escalation tracking)
+- asynchronous media handling and scanning pipelines
+- websocket/realtime feed + notifications
+- richer admin dashboards and institution governance tooling
+- recommendation/ranking and personalization layers
