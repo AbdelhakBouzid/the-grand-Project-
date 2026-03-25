@@ -1,4 +1,4 @@
-# EduWorld MVP (Phase 1)
+# EduWorld MVP (Phase 2)
 
 Production-grade MVP monorepo for a global student-only social learning platform.
 
@@ -35,37 +35,53 @@ Production-grade MVP monorepo for a global student-only social learning platform
 ## Docker full stack
 - `docker compose up --build`
 
-## API highlights (Phase 1)
-- `POST /auth/signup`
-- `POST /auth/login`
-- `GET /users/me`
-- `GET /institutions`
-- `POST /institutions/requests`
-- `POST /verification-requests` (multipart upload)
-- `GET /verification-requests/mine`
-- `GET /reviewer/verifications`
-- `GET /reviewer/verifications/:id`
-- `PATCH /reviewer/verifications/:id`
+## API highlights (Phase 2)
+- Auth + profile:
+  - `POST /auth/signup`
+  - `POST /auth/login`
+  - `GET /users/me`
+- Feed:
+  - `GET /feed/posts?page=&limit=&q=`
+  - `POST /feed/posts`
+  - `GET /feed/posts/:postId/comments?page=&limit=`
+  - `POST /feed/posts/:postId/comments`
+  - `POST /feed/posts/:postId/reactions`
+- Groups:
+  - `GET /groups?page=&limit=&q=`
+  - `POST /groups`
+  - `POST /groups/:groupId/memberships`
+- Resources and attachments:
+  - `GET /resources?page=&limit=&q=`
+  - `POST /resources`
+- Exam archive:
+  - `GET /exam-archive?page=&limit=&subject=&year=`
+  - `POST /exam-archive` (teacher/institution_admin/super_admin)
+- Notifications:
+  - `GET /notifications?page=&limit=`
+  - `PATCH /notifications/:id/read`
+- Basic moderation reports:
+  - `POST /moderation/reports`
+  - `GET /moderation/reports` (moderator/reviewer/super_admin)
+
+> Restricted sections (feed, groups, resources, exams, notifications, moderation) require authenticated users with approved accounts, except privileged roles (reviewer/moderator/super_admin).
 
 ## Seed users
 - Reviewer: `reviewer@eduworld.local` / `ChangeMe123!`
-- Student: `student@eduworld.local` / `ChangeMe123!`
+- Student (approved): `student@eduworld.local` / `ChangeMe123!`
 
-## Security defaults
-- Argon2id password hashing
-- JWT access/refresh split
-- Role-based guards for reviewer/admin routes
-- File type + size restrictions for verification docs
-- Audit logs on review actions
+## Frontend pages (Phase 2)
+- `/feed`
+- `/groups`
+- `/resources`
+- `/exams`
 
 ## Tests
 - `npm run test -w @eduworld/api`
-- Includes signup, login, verification creation, and reviewer approval/rejection service tests.
+- Includes auth, verification/reviewer services, and new feed/groups service tests.
 
-## Phase 2 TODO (known)
-- Full feed/groups/resources/exams API & frontend
-- Institution admin workflows
-- Async processing with Redis queues
-- Stronger i18n framework and RTL runtime switching
-- Reviewer UI data table and action forms
-- Refresh token persistence/rotation and revoke lists
+## Phase 3 (planned)
+- Institution admin workflows and moderation action execution
+- Rich media upload APIs with signed URLs + anti-virus scan queue
+- Notification fan-out jobs and preference management
+- Realtime updates (feed/group notifications)
+- Advanced search/ranking and activity analytics
