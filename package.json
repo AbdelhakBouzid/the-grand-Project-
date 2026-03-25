@@ -1,0 +1,17 @@
+{
+  "name": "eduworld-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @eduworld/api & npm run dev -w @eduworld/web",
+    "build": "npm run build -w @eduworld/api && npm run build -w @eduworld/web",
+    "lint": "npm run lint -w @eduworld/api && npm run lint -w @eduworld/web",
+    "test": "npm run test -w @eduworld/api",
+    "db:generate": "npm run prisma:generate -w @eduworld/api",
+    "db:migrate": "npm run prisma:migrate -w @eduworld/api",
+    "db:seed": "npm run prisma:seed -w @eduworld/api"
+  }
+}
