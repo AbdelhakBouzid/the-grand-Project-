@@ -41,6 +41,7 @@ export type CurrentUser = {
   role: string;
   status: string;
   institutionId?: string | null;
+  hasPendingInstitutionRequest?: boolean;
   profile?: { id: string } | null;
   institution?: { id: string } | null;
 };

@@ -37,7 +37,7 @@ export default function AdminReviewDetailPage({ params }: { params: { id: string
   const searchParams = useSearchParams();
   const token = useMemo(() => getAccessToken(), []);
   const payload = useMemo(() => parseAccessToken(token), [token]);
-  const isAdmin = payload?.role === 'super_admin';
+  const isAdmin = payload?.role === 'super_admin' || payload?.role === 'reviewer';
   const type = searchParams.get('type');
 
   const [userRequest, setUserRequest] = useState<PendingUser | null>(null);
@@ -85,7 +85,7 @@ export default function AdminReviewDetailPage({ params }: { params: { id: string
     }
 
     if (!isAdmin) {
-      setError('Only super admins can access this review page.');
+      setError('Only reviewers and super admins can access this review page.');
       setLoading(false);
       return;
     }

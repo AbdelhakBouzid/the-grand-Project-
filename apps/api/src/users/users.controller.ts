@@ -18,14 +18,14 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.super_admin)
+  @Roles(UserRole.super_admin, UserRole.reviewer)
   @Get('pending')
   listPending() {
     return this.usersService.listPendingUsers();
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.super_admin)
+  @Roles(UserRole.super_admin, UserRole.reviewer)
   @Patch(':id/approval')
   reviewUser(@Param('id') id: string, @Body() dto: ReviewUserDto) {
     return this.usersService.reviewUser(id, dto.action);

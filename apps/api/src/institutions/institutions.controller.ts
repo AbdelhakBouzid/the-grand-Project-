@@ -23,14 +23,14 @@ export class InstitutionsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.super_admin)
+  @Roles(UserRole.super_admin, UserRole.reviewer)
   @Get('requests/pending')
   listPendingRequests() {
     return this.institutionsService.listPendingRequests();
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.super_admin)
+  @Roles(UserRole.super_admin, UserRole.reviewer)
   @Patch('requests/:id/review')
   reviewRequest(
     @Param('id') id: string,

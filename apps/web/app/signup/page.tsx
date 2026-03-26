@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shell } from '../../components/shell';
+import { getCurrentUser } from '../../lib/api';
+import { resolvePostAuthRoute } from '../../lib/routing';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -55,8 +57,16 @@ export default function SignupPage() {
         localStorage.setItem('refreshToken', data.refreshToken);
       }
 
+      let destination = '/onboarding';
+      try {
+        const me = await getCurrentUser(data.accessToken);
+        destination = resolvePostAuthRoute(me);
+      } catch (error) {
+        console.error('Could not load current user after signup; falling back to /onboarding', error);
+      }
+
       setMessage('Account created. Redirecting...');
-      router.replace('/onboarding');
+      router.replace(destination);
     } catch (error) {
       console.error('Signup submit crashed', error);
       setMessage('Unable to sign up right now. Please try again in a moment.');

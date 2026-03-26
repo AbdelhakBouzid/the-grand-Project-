@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Shell } from '../../components/shell';
 
 export default function OnboardingPage() {
+  const router = useRouter();
   const [status, setStatus] = useState('');
 
   async function submit(formData: FormData) {
@@ -14,7 +16,13 @@ export default function OnboardingPage() {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ ...payload, isPublic: payload.isPublic === 'true' }),
     });
-    setStatus(res.ok ? 'Institution request submitted.' : 'Request failed.');
+    if (res.ok) {
+      setStatus('Institution request submitted.');
+      router.replace('/pending-review');
+      return;
+    }
+
+    setStatus('Request failed.');
   }
 
   return (
