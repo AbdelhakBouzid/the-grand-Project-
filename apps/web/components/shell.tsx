@@ -1,5 +1,9 @@
+'use client';
+
 import Link from 'next/link';
+import { useMemo } from 'react';
 import type { ReactNode } from 'react';
+import { getAccessToken, parseAccessToken } from '../lib/api';
 
 type ShellProps = {
   title: string;
@@ -7,12 +11,11 @@ type ShellProps = {
   children: ReactNode;
 };
 
-const primaryNav = [
+const basePrimaryNav = [
   { href: '/feed', label: 'Feed' },
   { href: '/groups', label: 'Groups' },
   { href: '/resources', label: 'Resources' },
   { href: '/exams', label: 'Exams' },
-  { href: '/admin/reviews', label: 'Admin' },
 ];
 
 const accountNav = [
@@ -21,6 +24,14 @@ const accountNav = [
 ];
 
 export function Shell({ title, subtitle, children }: ShellProps) {
+  const token = useMemo(() => getAccessToken(), []);
+  const payload = useMemo(() => parseAccessToken(token), [token]);
+  const canSeeAdmin = payload?.role === 'super_admin' || payload?.role === 'reviewer';
+
+  const primaryNav = canSeeAdmin
+    ? [...basePrimaryNav, { href: '/admin/reviews', label: 'Admin' }]
+    : basePrimaryNav;
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-slate-50">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">

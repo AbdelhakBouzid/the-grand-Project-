@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Shell } from '../../../../components/shell';
 import { apiFetch, getAccessToken, parseAccessToken } from '../../../../lib/api';
 
@@ -30,11 +30,15 @@ type PendingInstitutionRequest = {
   };
 };
 
+const REQUEST_INFO_PREFIX = '[REQUEST_MORE_INFO]';
+
 export default function AdminReviewDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const token = useMemo(() => getAccessToken(), []);
   const payload = useMemo(() => parseAccessToken(token), [token]);
   const isAdmin = payload?.role === 'super_admin';
+  const type = searchParams.get('type');
 
   const [userRequest, setUserRequest] = useState<PendingUser | null>(null);
   const [institutionRequest, setInstitutionRequest] = useState<PendingInstitutionRequest | null>(null);
@@ -42,6 +46,7 @@ export default function AdminReviewDetailPage({ params }: { params: { id: string
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [reason, setReason] = useState('');
 
   const loadItem = useCallback(async () => {
     if (!token) return;
@@ -49,19 +54,29 @@ export default function AdminReviewDetailPage({ params }: { params: { id: string
     setError(null);
 
     try {
-      const [users, institutions] = await Promise.all([
-        apiFetch<PendingUser[]>('/users/pending', undefined, token),
-        apiFetch<PendingInstitutionRequest[]>('/institutions/requests/pending', undefined, token),
-      ]);
+      if (type === 'user') {
+        const users = await apiFetch<PendingUser[]>('/users/pending', undefined, token);
+        setUserRequest(users.find((item) => item.id === params.id) ?? null);
+        setInstitutionRequest(null);
+      } else if (type === 'institution') {
+        const institutions = await apiFetch<PendingInstitutionRequest[]>('/institutions/requests/pending', undefined, token);
+        setInstitutionRequest(institutions.find((item) => item.id === params.id) ?? null);
+        setUserRequest(null);
+      } else {
+        const [users, institutions] = await Promise.all([
+          apiFetch<PendingUser[]>('/users/pending', undefined, token),
+          apiFetch<PendingInstitutionRequest[]>('/institutions/requests/pending', undefined, token),
+        ]);
 
-      setUserRequest(users.find((item) => item.id === params.id) ?? null);
-      setInstitutionRequest(institutions.find((item) => item.id === params.id) ?? null);
+        setUserRequest(users.find((item) => item.id === params.id) ?? null);
+        setInstitutionRequest(institutions.find((item) => item.id === params.id) ?? null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load review request.');
     } finally {
       setLoading(false);
     }
-  }, [params.id, token]);
+  }, [params.id, token, type]);
 
   useEffect(() => {
     if (!token) {
@@ -78,23 +93,53 @@ export default function AdminReviewDetailPage({ params }: { params: { id: string
     void loadItem();
   }, [isAdmin, loadItem, router, token]);
 
-  async function review(action: 'approve' | 'reject') {
+  async function review(action: 'approve' | 'reject' | 'request_info') {
     if (!token) return;
+
+    if (action === 'request_info' && !reason.trim()) {
+      setError('Please add the information request note before submitting.');
+      return;
+    }
+
     setBusy(true);
     setError(null);
     setSuccess(null);
 
     try {
       if (userRequest) {
-        await apiFetch(`/users/${userRequest.id}/approval`, { method: 'PATCH', body: JSON.stringify({ action }) }, token);
-        setSuccess(`User ${action === 'approve' ? 'approved' : 'rejected'} successfully.`);
+        await apiFetch(
+          `/users/${userRequest.id}/approval`,
+          {
+            method: 'PATCH',
+            body: JSON.stringify({
+              action: action === 'request_info' ? 'reject' : action,
+              reason: action === 'request_info' ? `${REQUEST_INFO_PREFIX} ${reason.trim()}` : reason.trim() || undefined,
+            }),
+          },
+          token,
+        );
+        setSuccess(
+          action === 'request_info'
+            ? 'Request for user information submitted.'
+            : `User ${action === 'approve' ? 'approved' : 'rejected'} successfully.`,
+        );
       } else if (institutionRequest) {
         await apiFetch(
           `/institutions/requests/${institutionRequest.id}/review`,
-          { method: 'PATCH', body: JSON.stringify({ action }) },
+          {
+            method: 'PATCH',
+            body: JSON.stringify({
+              action: action === 'request_info' ? 'reject' : action,
+              reason: action === 'request_info' ? `${REQUEST_INFO_PREFIX} ${reason.trim()}` : reason.trim() || undefined,
+            }),
+          },
           token,
         );
-        setSuccess(`Institution request ${action === 'approve' ? 'approved' : 'rejected'} successfully.`);
+        setSuccess(
+          action === 'request_info'
+            ? 'Institution information request submitted.'
+            : `Institution request ${action === 'approve' ? 'approved' : 'rejected'} successfully.`,
+        );
       }
 
       await loadItem();
@@ -108,7 +153,7 @@ export default function AdminReviewDetailPage({ params }: { params: { id: string
   const missing = !loading && !userRequest && !institutionRequest;
 
   return (
-    <Shell title={`Review ${params.id}`} subtitle="Approve or reject pending users and institution requests.">
+    <Shell title={`Review ${params.id}`} subtitle="Approve, reject, or request more information.">
       <div className="space-y-4">
         {error ? <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div> : null}
         {success ? <div className="card border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">{success}</div> : null}
@@ -138,14 +183,25 @@ export default function AdminReviewDetailPage({ params }: { params: { id: string
             <p className="text-xs text-slate-500">{institutionRequest.city ? `${institutionRequest.city}, ` : ''}{institutionRequest.countryCode}</p>
             <p className="text-xs text-slate-500">Type: {institutionRequest.isPublic ? 'Public' : 'Private'}</p>
             <p className="text-xs text-slate-500">Requester: {institutionRequest.requester.email}</p>
+            <p className="text-xs text-slate-500">Submitted: {new Date(institutionRequest.createdAt).toLocaleString()}</p>
           </div>
         ) : null}
 
         {(userRequest || institutionRequest) ? (
-          <div className="flex flex-wrap gap-2">
-            <button className="btn-primary" onClick={() => void review('approve')} disabled={busy}>{busy ? 'Saving…' : 'Approve'}</button>
-            <button className="btn-secondary" onClick={() => void review('reject')} disabled={busy}>{busy ? 'Saving…' : 'Reject'}</button>
-          </div>
+          <>
+            <textarea
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              placeholder="Optional reason (required for request info)"
+              className="textarea min-h-24 text-sm"
+              disabled={busy}
+            />
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <button className="btn-primary" onClick={() => void review('approve')} disabled={busy}>{busy ? 'Saving…' : 'Approve'}</button>
+              <button className="btn-secondary" onClick={() => void review('reject')} disabled={busy}>{busy ? 'Saving…' : 'Reject'}</button>
+              <button className="btn-secondary" onClick={() => void review('request_info')} disabled={busy}>{busy ? 'Saving…' : 'Request info'}</button>
+            </div>
+          </>
         ) : null}
 
         <Link href="/admin/reviews" className="inline-block text-sm font-medium text-blue-700 underline">Back to admin dashboard</Link>
