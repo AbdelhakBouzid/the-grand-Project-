@@ -1,4 +1,5 @@
 'use client';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shell } from '../../components/shell';
@@ -37,17 +38,11 @@ export default function SignupPage() {
       if (!res.ok) {
         const apiMessage = typeof data?.message === 'string' ? data.message : null;
         setMessage(apiMessage || 'Signup failed. Please try again.');
-        console.error('Signup request failed', {
-          status: res.status,
-          statusText: res.statusText,
-          response: data,
-        });
         return;
       }
 
       if (typeof data?.accessToken !== 'string' || data.accessToken.length === 0) {
         setMessage('Signup succeeded, but no session token was returned. Please log in.');
-        console.error('Signup succeeded without expected tokens', data);
         return;
       }
 
@@ -64,5 +59,14 @@ export default function SignupPage() {
     }
   }
 
-  return <Shell title="Sign up"><form action={submit} className="space-y-3"><input className="w-full border p-2" name="email" type="email" placeholder="Email" required/><input className="w-full border p-2" name="password" type="password" placeholder="Password" required/><button className="rounded bg-blue-600 px-4 py-2 text-white">Create account</button><p>{message}</p></form></Shell>;
+  return (
+    <Shell title="Create your account" subtitle="Join your verified institution community.">
+      <form action={submit} className="mx-auto grid w-full max-w-md gap-3">
+        <input className="input" name="email" type="email" placeholder="Email" required />
+        <input className="input" name="password" type="password" placeholder="Password" required />
+        <button className="btn-primary">Create account</button>
+        {message ? <p className="text-sm text-slate-600">{message}</p> : null}
+      </form>
+    </Shell>
+  );
 }
