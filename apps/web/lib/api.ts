@@ -35,6 +35,17 @@ export function isLoggedIn() {
   return Boolean(getAccessToken());
 }
 
+export type CurrentUser = {
+  id: string;
+  email: string;
+  role: string;
+  status: string;
+};
+
+export async function getCurrentUser(token?: string) {
+  return apiFetch<CurrentUser>('/users/me', undefined, token);
+}
+
 export async function apiFetch<T>(path: string, init?: RequestInit, token?: string): Promise<T> {
   const authToken = token ?? getAccessToken();
   const headers = new Headers(init?.headers ?? {});

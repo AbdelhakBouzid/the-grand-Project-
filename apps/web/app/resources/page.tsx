@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shell } from '../../components/shell';
-import { apiFetch, getAccessToken } from '../../lib/api';
+import { apiFetch, getAccessToken, getCurrentUser } from '../../lib/api';
 
 type ResourceFile = { id: string; fileUrl: string };
 type Resource = {
@@ -27,6 +27,7 @@ export default function ResourcesPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [fileUrls, setFileUrls] = useState('');
+  const [pendingApproval, setPendingApproval] = useState(false);
 
   async function loadResources() {
     setLoading(true);
@@ -34,9 +35,14 @@ export default function ResourcesPage() {
     try {
       const data = await apiFetch<ResourcesResponse>('/resources', undefined, token ?? undefined);
       setResources(data.items);
+      setPendingApproval(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load resources.');
+      const message = err instanceof Error ? err.message : 'Could not load resources.';
+      setError(message);
       if ((err as { status?: number })?.status === 401) router.push('/login');
+      if ((err as { status?: number })?.status === 403 && message.toLowerCase().includes('approved accounts only')) {
+        setPendingApproval(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -50,6 +56,23 @@ export default function ResourcesPage() {
     void loadResources();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, router]);
+
+  useEffect(() => {
+    if (!token || !pendingApproval) return;
+    const timer = setInterval(async () => {
+      try {
+        const me = await getCurrentUser(token);
+        if (me.status === 'approved') {
+          setPendingApproval(false);
+          setError(null);
+          await loadResources();
+        }
+      } catch {
+        // ignore poll failures
+      }
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [pendingApproval, token]);
 
   async function onCreateResource(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -84,18 +107,21 @@ export default function ResourcesPage() {
       <div className="space-y-6">
         <form onSubmit={onCreateResource} className="card grid gap-3 bg-slate-50 p-4">
           <h2 className="text-base font-semibold">Upload or link a resource</h2>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Resource title" className="input" />
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="textarea" />
+          <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Resource title" className="input" disabled={pendingApproval} />
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="textarea" disabled={pendingApproval} />
           <textarea
             value={fileUrls}
             onChange={(e) => setFileUrls(e.target.value)}
             placeholder="One file URL per line"
             className="textarea"
+            disabled={pendingApproval}
           />
-          <button disabled={creating} className="btn-primary w-fit">
+          <button disabled={creating || pendingApproval} className="btn-primary w-fit">
             {creating ? 'Publishing…' : 'Create Resource'}
           </button>
         </form>
+
+        {pendingApproval ? <div className="card border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">Your account is pending review. Access will unlock automatically once approved.</div> : null}
 
         {error ? (
           <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">

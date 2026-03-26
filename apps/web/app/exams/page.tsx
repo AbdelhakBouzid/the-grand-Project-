@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shell } from '../../components/shell';
-import { apiFetch, getAccessToken, parseAccessToken } from '../../lib/api';
+import { apiFetch, getAccessToken, getCurrentUser, parseAccessToken } from '../../lib/api';
 
 type Exam = {
   id: string;
@@ -35,6 +35,7 @@ export default function ExamsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState(false);
 
   async function loadExams() {
     setLoading(true);
@@ -48,9 +49,15 @@ export default function ExamsPage() {
       const query = params.toString();
       const data = await apiFetch<ExamsResponse>(`/exam-archive${query ? `?${query}` : ''}`, undefined, token ?? undefined);
       setExams(data.items);
+      setPendingApproval(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load exams.');
-      if ((err as { status?: number })?.status === 401) router.push('/login');
+      const status = (err as { status?: number })?.status;
+      const message = err instanceof Error ? err.message : 'Failed to load exams.';
+      setError(message);
+      if (status === 401) router.push('/login');
+      if (status === 403 && message.toLowerCase().includes('approved accounts only')) {
+        setPendingApproval(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -64,6 +71,23 @@ export default function ExamsPage() {
     void loadExams();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, router]);
+
+  useEffect(() => {
+    if (!token || !pendingApproval) return;
+    const timer = setInterval(async () => {
+      try {
+        const me = await getCurrentUser(token);
+        if (me.status === 'approved') {
+          setPendingApproval(false);
+          setError(null);
+          await loadExams();
+        }
+      } catch {
+        // ignored
+      }
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [pendingApproval, token]);
 
   async function applyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -102,16 +126,18 @@ export default function ExamsPage() {
 
         {canCreate ? (
           <form onSubmit={onCreateExam} className="card grid gap-3 border-blue-200 bg-blue-50 p-4 sm:grid-cols-3">
-            <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Exam title" className="input" />
-            <input value={subject} onChange={(e) => setSubject(e.target.value)} required placeholder="Subject" className="input" />
+            <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Exam title" className="input" disabled={pendingApproval} />
+            <input value={subject} onChange={(e) => setSubject(e.target.value)} required placeholder="Subject" className="input" disabled={pendingApproval} />
             <div className="flex gap-2">
-              <input value={year} onChange={(e) => setYear(e.target.value)} required placeholder="Year" className="input" />
-              <button disabled={creating} className="btn-primary">{creating ? 'Saving…' : 'Create'}</button>
+              <input value={year} onChange={(e) => setYear(e.target.value)} required placeholder="Year" className="input" disabled={pendingApproval} />
+              <button disabled={creating || pendingApproval} className="btn-primary">{creating ? 'Saving…' : 'Create'}</button>
             </div>
           </form>
         ) : (
           <p className="text-xs text-slate-500">Only teachers/admin users can add exam sets.</p>
         )}
+
+        {pendingApproval ? <div className="card border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">Your account is pending review. Access will unlock automatically once approved.</div> : null}
 
         {error ? (
           <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">
