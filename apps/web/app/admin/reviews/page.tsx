@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shell } from '../../../components/shell';
@@ -29,6 +30,8 @@ type PendingInstitutionRequest = {
   };
 };
 
+const REQUEST_INFO_PREFIX = '[REQUEST_MORE_INFO]';
+
 export default function AdminReviewListPage() {
   const router = useRouter();
   const token = useMemo(() => getAccessToken(), []);
@@ -40,6 +43,7 @@ export default function AdminReviewListPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [reasonById, setReasonById] = useState<Record<string, string>>({});
 
   const isAdmin = payload?.role === 'super_admin';
 
@@ -91,8 +95,23 @@ export default function AdminReviewListPage() {
     return () => clearInterval(timer);
   }, [token, isAdmin, loadDashboard]);
 
-  async function reviewUser(userId: string, action: 'approve' | 'reject') {
+  function updateReason(itemKey: string, reason: string) {
+    setReasonById((prev) => ({ ...prev, [itemKey]: reason }));
+  }
+
+  function readReason(itemKey: string) {
+    return reasonById[itemKey]?.trim() ?? '';
+  }
+
+  async function reviewUser(userId: string, action: 'approve' | 'reject' | 'request_info') {
     if (!token) return;
+    const reason = readReason(`user:${userId}`);
+
+    if (action === 'request_info' && !reason) {
+      setError('Please include the requested information before sending.');
+      return;
+    }
+
     setBusyId(`user:${userId}`);
     setError(null);
     setSuccess(null);
@@ -102,11 +121,18 @@ export default function AdminReviewListPage() {
         `/users/${userId}/approval`,
         {
           method: 'PATCH',
-          body: JSON.stringify({ action }),
+          body: JSON.stringify({
+            action: action === 'request_info' ? 'reject' : action,
+            reason: action === 'request_info' ? `${REQUEST_INFO_PREFIX} ${reason}` : reason || undefined,
+          }),
         },
         token,
       );
-      setSuccess(`User ${action === 'approve' ? 'approved' : 'rejected'} successfully.`);
+      setSuccess(
+        action === 'request_info'
+          ? 'Request for more information has been sent.'
+          : `User ${action === 'approve' ? 'approved' : 'rejected'} successfully.`,
+      );
       await loadDashboard();
     } catch (err) {
       setError(err instanceof Error ? err.message : `Failed to ${action} user.`);
@@ -115,8 +141,15 @@ export default function AdminReviewListPage() {
     }
   }
 
-  async function reviewInstitutionRequest(requestId: string, action: 'approve' | 'reject') {
+  async function reviewInstitutionRequest(requestId: string, action: 'approve' | 'reject' | 'request_info') {
     if (!token) return;
+    const reason = readReason(`institution:${requestId}`);
+
+    if (action === 'request_info' && !reason) {
+      setError('Please include the requested information before sending.');
+      return;
+    }
+
     setBusyId(`institution:${requestId}`);
     setError(null);
     setSuccess(null);
@@ -126,11 +159,18 @@ export default function AdminReviewListPage() {
         `/institutions/requests/${requestId}/review`,
         {
           method: 'PATCH',
-          body: JSON.stringify({ action }),
+          body: JSON.stringify({
+            action: action === 'request_info' ? 'reject' : action,
+            reason: action === 'request_info' ? `${REQUEST_INFO_PREFIX} ${reason}` : reason || undefined,
+          }),
         },
         token,
       );
-      setSuccess(`Institution request ${action === 'approve' ? 'approved' : 'rejected'} successfully.`);
+      setSuccess(
+        action === 'request_info'
+          ? 'Institution request marked as more information requested.'
+          : `Institution request ${action === 'approve' ? 'approved' : 'rejected'} successfully.`,
+      );
       await loadDashboard();
     } catch (err) {
       setError(err instanceof Error ? err.message : `Failed to ${action} institution request.`);
@@ -167,15 +207,30 @@ export default function AdminReviewListPage() {
                 <ul className="space-y-3">
                   {users.map((user) => (
                     <li key={user.id} className="card p-4">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-800">{user.email}</p>
-                          <p className="text-xs text-slate-500">Role: {user.role} · Created: {new Date(user.createdAt).toLocaleString()}</p>
-                          <p className="text-xs text-slate-500">Institution: {user.institution?.name ?? 'Not linked yet'}</p>
+                      <div className="space-y-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800">{user.email}</p>
+                            <p className="text-xs text-slate-500">Role: {user.role} · Created: {new Date(user.createdAt).toLocaleString()}</p>
+                            <p className="text-xs text-slate-500">Institution: {user.institution?.name ?? 'Not linked yet'}</p>
+                          </div>
+                          <Link href={`/admin/reviews/${user.id}?type=user`} className="text-xs font-semibold text-blue-700 underline">
+                            Open details
+                          </Link>
                         </div>
-                        <div className="flex w-full gap-2 sm:w-auto">
-                          <button className="btn-primary flex-1 px-3 py-1.5 text-xs sm:flex-none" disabled={busyId === `user:${user.id}`} onClick={() => void reviewUser(user.id, 'approve')}>Approve</button>
-                          <button className="btn-secondary flex-1 px-3 py-1.5 text-xs sm:flex-none" disabled={busyId === `user:${user.id}`} onClick={() => void reviewUser(user.id, 'reject')}>Reject</button>
+
+                        <textarea
+                          value={reasonById[`user:${user.id}`] ?? ''}
+                          onChange={(event) => updateReason(`user:${user.id}`, event.target.value)}
+                          placeholder="Optional reason (required when requesting more info)"
+                          className="textarea min-h-20 text-sm"
+                          disabled={busyId === `user:${user.id}`}
+                        />
+
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                          <button className="btn-primary px-3 py-1.5 text-xs" disabled={busyId === `user:${user.id}`} onClick={() => void reviewUser(user.id, 'approve')}>Approve</button>
+                          <button className="btn-secondary px-3 py-1.5 text-xs" disabled={busyId === `user:${user.id}`} onClick={() => void reviewUser(user.id, 'reject')}>Reject</button>
+                          <button className="btn-secondary px-3 py-1.5 text-xs" disabled={busyId === `user:${user.id}`} onClick={() => void reviewUser(user.id, 'request_info')}>Request info</button>
                         </div>
                       </div>
                     </li>
@@ -192,15 +247,30 @@ export default function AdminReviewListPage() {
                 <ul className="space-y-3">
                   {institutionRequests.map((request) => (
                     <li key={request.id} className="card p-4">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-800">{request.name}</p>
-                          <p className="text-xs text-slate-500">{request.city ? `${request.city}, ` : ''}{request.countryCode} · {request.isPublic ? 'Public' : 'Private'}</p>
-                          <p className="text-xs text-slate-500">Requested by {request.requester.email}</p>
+                      <div className="space-y-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800">{request.name}</p>
+                            <p className="text-xs text-slate-500">{request.city ? `${request.city}, ` : ''}{request.countryCode} · {request.isPublic ? 'Public' : 'Private'}</p>
+                            <p className="text-xs text-slate-500">Requested by {request.requester.email}</p>
+                          </div>
+                          <Link href={`/admin/reviews/${request.id}?type=institution`} className="text-xs font-semibold text-blue-700 underline">
+                            Open details
+                          </Link>
                         </div>
-                        <div className="flex w-full gap-2 sm:w-auto">
-                          <button className="btn-primary flex-1 px-3 py-1.5 text-xs sm:flex-none" disabled={busyId === `institution:${request.id}`} onClick={() => void reviewInstitutionRequest(request.id, 'approve')}>Approve</button>
-                          <button className="btn-secondary flex-1 px-3 py-1.5 text-xs sm:flex-none" disabled={busyId === `institution:${request.id}`} onClick={() => void reviewInstitutionRequest(request.id, 'reject')}>Reject</button>
+
+                        <textarea
+                          value={reasonById[`institution:${request.id}`] ?? ''}
+                          onChange={(event) => updateReason(`institution:${request.id}`, event.target.value)}
+                          placeholder="Optional reason (required when requesting more info)"
+                          className="textarea min-h-20 text-sm"
+                          disabled={busyId === `institution:${request.id}`}
+                        />
+
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                          <button className="btn-primary px-3 py-1.5 text-xs" disabled={busyId === `institution:${request.id}`} onClick={() => void reviewInstitutionRequest(request.id, 'approve')}>Approve</button>
+                          <button className="btn-secondary px-3 py-1.5 text-xs" disabled={busyId === `institution:${request.id}`} onClick={() => void reviewInstitutionRequest(request.id, 'reject')}>Reject</button>
+                          <button className="btn-secondary px-3 py-1.5 text-xs" disabled={busyId === `institution:${request.id}`} onClick={() => void reviewInstitutionRequest(request.id, 'request_info')}>Request info</button>
                         </div>
                       </div>
                     </li>
