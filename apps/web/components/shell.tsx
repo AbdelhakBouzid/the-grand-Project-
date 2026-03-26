@@ -12,6 +12,7 @@ const primaryNav = [
   { href: '/groups', label: 'Groups' },
   { href: '/resources', label: 'Resources' },
   { href: '/exams', label: 'Exams' },
+  { href: '/admin/reviews', label: 'Admin' },
 ];
 
 const accountNav = [

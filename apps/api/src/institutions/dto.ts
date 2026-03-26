@@ -1,4 +1,9 @@
-import { IsBoolean, IsOptional, IsString, Length } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, Length } from 'class-validator';
+
+export enum InstitutionApprovalAction {
+  approve = 'approve',
+  reject = 'reject',
+}
 
 export class CreateInstitutionRequestDto {
   @IsString()
@@ -15,4 +20,13 @@ export class CreateInstitutionRequestDto {
 
   @IsBoolean()
   isPublic!: boolean;
+}
+
+export class ReviewInstitutionRequestDto {
+  @IsEnum(InstitutionApprovalAction)
+  action!: InstitutionApprovalAction;
+
+  @IsOptional()
+  @IsString()
+  reason?: string;
 }

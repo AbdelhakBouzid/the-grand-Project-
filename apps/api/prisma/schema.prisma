@@ -50,6 +50,12 @@ enum AuditAction {
   moderation_action
 }
 
+enum InstitutionRequestStatus {
+  pending
+  approved
+  rejected
+}
+
 model User {
   id             String         @id @default(uuid())
   email          String         @unique
@@ -75,6 +81,8 @@ model User {
   notifications         Notification[]
   reviewedRequests      VerificationRequest[] @relation("RequestReviewer")
   auditLogs             AuditLog[]
+  institutionRequests      InstitutionRequest[] @relation("InstitutionRequestRequester")
+  reviewedInstitutionRequests InstitutionRequest[] @relation("InstitutionRequestReviewer")
 }
 
 model UserProfile {
@@ -102,6 +110,27 @@ model Institution {
   users         User[]
   departments   Department[]
   verificationRequests VerificationRequest[]
+  institutionRequests InstitutionRequest[]
+}
+
+model InstitutionRequest {
+  id               String                   @id @default(uuid())
+  requesterUserId  String
+  name             String
+  countryCode      String
+  city             String?
+  isPublic         Boolean
+  status           InstitutionRequestStatus @default(pending)
+  reviewedByUserId String?
+  reviewedAt       DateTime?
+  rejectionReason  String?
+  institutionId    String?
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+
+  requester        User                     @relation("InstitutionRequestRequester", fields: [requesterUserId], references: [id])
+  reviewer         User?                    @relation("InstitutionRequestReviewer", fields: [reviewedByUserId], references: [id])
+  institution      Institution?             @relation(fields: [institutionId], references: [id])
 }
 
 model InstitutionAlias {
