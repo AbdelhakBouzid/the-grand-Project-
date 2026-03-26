@@ -21,7 +21,7 @@ export class VerificationService {
 
     for (const file of files) {
       const key = `verifications/${request.id}/${randomUUID()}-${file.originalname}`;
-      const uploadResult = await this.storage.uploadBuffer(key, file.buffer, file.mimetype);
+      const uploadResult = await this.storage.uploadBuffer(key, file.buffer);
 
       await this.prisma.verificationDocument.create({
         data: {
