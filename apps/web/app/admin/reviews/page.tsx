@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shell } from '../../../components/shell';
 import { apiFetch, getAccessToken, parseAccessToken } from '../../../lib/api';
@@ -38,11 +38,12 @@ export default function AdminReviewListPage() {
   const [institutionRequests, setInstitutionRequests] = useState<PendingInstitutionRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const isAdmin = payload?.role === 'super_admin';
 
-  async function loadDashboard() {
+  const loadDashboard = useCallback(async () => {
     if (!token) return;
 
     setLoading(true);
@@ -63,7 +64,7 @@ export default function AdminReviewListPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [router, token]);
 
   useEffect(() => {
     if (!token) {
@@ -78,19 +79,34 @@ export default function AdminReviewListPage() {
     }
 
     void loadDashboard();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, isAdmin, router]);
+  }, [token, isAdmin, router, loadDashboard]);
+
+  useEffect(() => {
+    if (!token || !isAdmin) return;
+
+    const timer = setInterval(() => {
+      void loadDashboard();
+    }, 15000);
+
+    return () => clearInterval(timer);
+  }, [token, isAdmin, loadDashboard]);
 
   async function reviewUser(userId: string, action: 'approve' | 'reject') {
     if (!token) return;
-    setBusyId(userId);
+    setBusyId(`user:${userId}`);
     setError(null);
+    setSuccess(null);
 
     try {
-      await apiFetch(`/users/${userId}/approval`, {
-        method: 'PATCH',
-        body: JSON.stringify({ action }),
-      }, token);
+      await apiFetch(
+        `/users/${userId}/approval`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ action }),
+        },
+        token,
+      );
+      setSuccess(`User ${action === 'approve' ? 'approved' : 'rejected'} successfully.`);
       await loadDashboard();
     } catch (err) {
       setError(err instanceof Error ? err.message : `Failed to ${action} user.`);
@@ -101,14 +117,20 @@ export default function AdminReviewListPage() {
 
   async function reviewInstitutionRequest(requestId: string, action: 'approve' | 'reject') {
     if (!token) return;
-    setBusyId(requestId);
+    setBusyId(`institution:${requestId}`);
     setError(null);
+    setSuccess(null);
 
     try {
-      await apiFetch(`/institutions/requests/${requestId}/review`, {
-        method: 'PATCH',
-        body: JSON.stringify({ action }),
-      }, token);
+      await apiFetch(
+        `/institutions/requests/${requestId}/review`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ action }),
+        },
+        token,
+      );
+      setSuccess(`Institution request ${action === 'approve' ? 'approved' : 'rejected'} successfully.`);
       await loadDashboard();
     } catch (err) {
       setError(err instanceof Error ? err.message : `Failed to ${action} institution request.`);
@@ -120,7 +142,15 @@ export default function AdminReviewListPage() {
   return (
     <Shell title="Admin Approval Dashboard" subtitle="Review user and institution onboarding requests.">
       <div className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs text-slate-500">Auto-refreshes every 15 seconds</p>
+          <button onClick={() => void loadDashboard()} className="btn-secondary px-3 py-1.5 text-xs" disabled={loading}>
+            {loading ? 'Refreshing…' : 'Refresh now'}
+          </button>
+        </div>
+
         {error ? <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div> : null}
+        {success ? <div className="card border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">{success}</div> : null}
 
         {loading ? (
           <div className="space-y-3">
@@ -137,15 +167,15 @@ export default function AdminReviewListPage() {
                 <ul className="space-y-3">
                   {users.map((user) => (
                     <li key={user.id} className="card p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <p className="text-sm font-semibold text-slate-800">{user.email}</p>
                           <p className="text-xs text-slate-500">Role: {user.role} · Created: {new Date(user.createdAt).toLocaleString()}</p>
                           <p className="text-xs text-slate-500">Institution: {user.institution?.name ?? 'Not linked yet'}</p>
                         </div>
-                        <div className="flex gap-2">
-                          <button className="btn-primary px-3 py-1.5 text-xs" disabled={busyId === user.id} onClick={() => void reviewUser(user.id, 'approve')}>Approve</button>
-                          <button className="btn-secondary px-3 py-1.5 text-xs" disabled={busyId === user.id} onClick={() => void reviewUser(user.id, 'reject')}>Reject</button>
+                        <div className="flex w-full gap-2 sm:w-auto">
+                          <button className="btn-primary flex-1 px-3 py-1.5 text-xs sm:flex-none" disabled={busyId === `user:${user.id}`} onClick={() => void reviewUser(user.id, 'approve')}>Approve</button>
+                          <button className="btn-secondary flex-1 px-3 py-1.5 text-xs sm:flex-none" disabled={busyId === `user:${user.id}`} onClick={() => void reviewUser(user.id, 'reject')}>Reject</button>
                         </div>
                       </div>
                     </li>
@@ -162,15 +192,15 @@ export default function AdminReviewListPage() {
                 <ul className="space-y-3">
                   {institutionRequests.map((request) => (
                     <li key={request.id} className="card p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <p className="text-sm font-semibold text-slate-800">{request.name}</p>
                           <p className="text-xs text-slate-500">{request.city ? `${request.city}, ` : ''}{request.countryCode} · {request.isPublic ? 'Public' : 'Private'}</p>
                           <p className="text-xs text-slate-500">Requested by {request.requester.email}</p>
                         </div>
-                        <div className="flex gap-2">
-                          <button className="btn-primary px-3 py-1.5 text-xs" disabled={busyId === request.id} onClick={() => void reviewInstitutionRequest(request.id, 'approve')}>Approve</button>
-                          <button className="btn-secondary px-3 py-1.5 text-xs" disabled={busyId === request.id} onClick={() => void reviewInstitutionRequest(request.id, 'reject')}>Reject</button>
+                        <div className="flex w-full gap-2 sm:w-auto">
+                          <button className="btn-primary flex-1 px-3 py-1.5 text-xs sm:flex-none" disabled={busyId === `institution:${request.id}`} onClick={() => void reviewInstitutionRequest(request.id, 'approve')}>Approve</button>
+                          <button className="btn-secondary flex-1 px-3 py-1.5 text-xs sm:flex-none" disabled={busyId === `institution:${request.id}`} onClick={() => void reviewInstitutionRequest(request.id, 'reject')}>Reject</button>
                         </div>
                       </div>
                     </li>

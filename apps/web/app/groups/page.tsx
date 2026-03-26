@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shell } from '../../components/shell';
-import { apiFetch, getAccessToken } from '../../lib/api';
+import { apiFetch, getAccessToken, getCurrentUser } from '../../lib/api';
 
 type Group = {
   id: string;
@@ -29,6 +29,7 @@ export default function GroupsPage() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [busyGroupId, setBusyGroupId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState(false);
 
   async function loadGroups() {
     setLoading(true);
@@ -36,9 +37,14 @@ export default function GroupsPage() {
     try {
       const data = await apiFetch<GroupsResponse>('/groups', undefined, token ?? undefined);
       setGroups(data.items);
+      setPendingApproval(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load groups.');
+      const message = err instanceof Error ? err.message : 'Failed to load groups.';
+      setError(message);
       if ((err as { status?: number })?.status === 401) router.push('/login');
+      if ((err as { status?: number })?.status === 403 && message.toLowerCase().includes('approved accounts only')) {
+        setPendingApproval(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -52,6 +58,23 @@ export default function GroupsPage() {
     void loadGroups();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, router]);
+
+  useEffect(() => {
+    if (!token || !pendingApproval) return;
+    const timer = setInterval(async () => {
+      try {
+        const me = await getCurrentUser(token);
+        if (me.status === 'approved') {
+          setPendingApproval(false);
+          setError(null);
+          await loadGroups();
+        }
+      } catch {
+        // ignored
+      }
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [pendingApproval, token]);
 
   async function onCreateGroup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -91,14 +114,16 @@ export default function GroupsPage() {
       <div className="space-y-6">
         <form onSubmit={onCreateGroup} className="card grid gap-3 bg-slate-50 p-4">
           <h2 className="text-base font-semibold">Create a group</h2>
-          <input value={name} onChange={(e) => setName(e.target.value)} required placeholder="Group name" className="input" />
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="textarea" />
+          <input value={name} onChange={(e) => setName(e.target.value)} required placeholder="Group name" className="input" disabled={pendingApproval} />
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="textarea" disabled={pendingApproval} />
           <label className="flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} />
+            <input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} disabled={pendingApproval} />
             Private group
           </label>
-          <button disabled={creating} className="btn-primary w-fit">{creating ? 'Creating…' : 'Create Group'}</button>
+          <button disabled={creating || pendingApproval} className="btn-primary w-fit">{creating ? 'Creating…' : 'Create Group'}</button>
         </form>
+
+        {pendingApproval ? <div className="card border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">Your account is pending review. Access will unlock automatically once approved.</div> : null}
 
         {error ? (
           <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -127,7 +152,7 @@ export default function GroupsPage() {
                   <p className="text-xs text-slate-500">{group._count?.members ?? 0} members</p>
                   <button
                     onClick={() => void joinGroup(group.id)}
-                    disabled={busyGroupId === group.id}
+                    disabled={busyGroupId === group.id || pendingApproval}
                     className="btn-secondary px-3 py-1.5 text-xs"
                   >
                     {busyGroupId === group.id ? 'Joining…' : 'Join'}

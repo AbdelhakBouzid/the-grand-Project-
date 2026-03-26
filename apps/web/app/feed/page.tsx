@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shell } from '../../components/shell';
-import { apiFetch, getAccessToken } from '../../lib/api';
+import { apiFetch, getAccessToken, getCurrentUser } from '../../lib/api';
 
 type FeedPost = {
   id: string;
@@ -18,6 +18,8 @@ type FeedResponse = {
   items: FeedPost[];
 };
 
+const APPROVAL_MESSAGE = 'Your account is still pending review. This page will unlock automatically after approval.';
+
 export default function FeedPage() {
   const router = useRouter();
   const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -25,6 +27,7 @@ export default function FeedPage() {
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [newPost, setNewPost] = useState('');
+  const [pendingApproval, setPendingApproval] = useState(false);
 
   const token = useMemo(() => getAccessToken(), []);
 
@@ -34,10 +37,15 @@ export default function FeedPage() {
     try {
       const data = await apiFetch<FeedResponse>('/feed/posts', undefined, token ?? undefined);
       setPosts(data.items);
+      setPendingApproval(false);
     } catch (err) {
+      const status = (err as { status?: number })?.status;
       const message = err instanceof Error ? err.message : 'Could not load feed posts.';
       setError(message);
-      if ((err as { status?: number })?.status === 401) router.push('/login');
+      if (status === 401) router.push('/login');
+      if (status === 403 && message.toLowerCase().includes('approved accounts only')) {
+        setPendingApproval(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -51,6 +59,25 @@ export default function FeedPage() {
     void loadPosts();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, token]);
+
+  useEffect(() => {
+    if (!token || !pendingApproval) return;
+
+    const timer = setInterval(async () => {
+      try {
+        const me = await getCurrentUser(token);
+        if (me.status === 'approved') {
+          setError(null);
+          setPendingApproval(false);
+          await loadPosts();
+        }
+      } catch {
+        // ignore polling errors
+      }
+    }, 8000);
+
+    return () => clearInterval(timer);
+  }, [pendingApproval, token]);
 
   async function onCreatePost(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,14 +107,17 @@ export default function FeedPage() {
             onChange={(event) => setNewPost(event.target.value)}
             placeholder="What are you studying today?"
             className="textarea min-h-28"
+            disabled={pendingApproval}
           />
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-slate-500">Live data from GET/POST /feed/posts</p>
-            <button disabled={creating} className="btn-primary">
+            <button disabled={creating || pendingApproval} className="btn-primary">
               {creating ? 'Posting…' : 'Create Post'}
             </button>
           </div>
         </form>
+
+        {pendingApproval ? <div className="card border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{APPROVAL_MESSAGE}</div> : null}
 
         {error ? (
           <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">
