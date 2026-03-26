@@ -40,6 +40,9 @@ export type CurrentUser = {
   email: string;
   role: string;
   status: string;
+  institutionId?: string | null;
+  profile?: { id: string } | null;
+  institution?: { id: string } | null;
 };
 
 export async function getCurrentUser(token?: string) {
