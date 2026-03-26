@@ -27,6 +27,23 @@ async function main() {
     },
   });
 
+
+  const configuredAdminEmail = process.env.SEED_ADMIN_EMAIL?.toLowerCase();
+  if (configuredAdminEmail) {
+    await prisma.user.upsert({
+      where: { email: configuredAdminEmail },
+      update: { role: UserRole.super_admin, status: AccountStatus.approved },
+      create: {
+        email: configuredAdminEmail,
+        passwordHash,
+        role: UserRole.super_admin,
+        status: AccountStatus.approved,
+        institutionId: institution.id,
+        profile: { create: { firstName: 'Platform', lastName: 'Admin' } },
+      },
+    });
+  }
+
   const reviewer = await prisma.user.upsert({
     where: { email: 'reviewer@eduworld.local' },
     update: {},
