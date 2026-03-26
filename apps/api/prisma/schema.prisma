@@ -101,6 +101,7 @@ model Institution {
   aliases       InstitutionAlias[]
   users         User[]
   departments   Department[]
+  verificationRequests VerificationRequest[]
 }
 
 model InstitutionAlias {
@@ -171,18 +172,151 @@ model DocumentAccessLog {
   document      VerificationDocument @relation(fields: [documentId], references: [id])
 }
 
-model Post { id String @id @default(uuid()) userId String body String createdAt DateTime @default(now()) user User @relation(fields: [userId], references: [id]) media PostMedia[] comments Comment[] reactions Reaction[] }
-model PostMedia { id String @id @default(uuid()) postId String url String mimeType String post Post @relation(fields: [postId], references: [id]) }
-model Comment { id String @id @default(uuid()) postId String userId String body String createdAt DateTime @default(now()) post Post @relation(fields: [postId], references: [id]) user User @relation(fields: [userId], references: [id]) }
-model Reaction { id String @id @default(uuid()) postId String userId String type String post Post @relation(fields: [postId], references: [id]) user User @relation(fields: [userId], references: [id]) @@unique([postId,userId,type]) }
-model Group { id String @id @default(uuid()) name String description String? isPrivate Boolean @default(false) members GroupMember[] }
-model GroupMember { id String @id @default(uuid()) groupId String userId String role String joinedAt DateTime @default(now()) group Group @relation(fields: [groupId], references: [id]) user User @relation(fields: [userId], references: [id]) }
-model Resource { id String @id @default(uuid()) title String description String? ownerUserId String owner User @relation(fields: [ownerUserId], references: [id]) files ResourceFile[] }
-model ResourceFile { id String @id @default(uuid()) resourceId String fileUrl String resource Resource @relation(fields: [resourceId], references: [id]) }
-model ExamSet { id String @id @default(uuid()) title String subject String year Int }
-model Report { id String @id @default(uuid()) reporterId String targetType String targetId String reason String createdAt DateTime @default(now()) reporter User @relation("Reporter", fields: [reporterId], references: [id]) }
-model ModerationAction { id String @id @default(uuid()) targetType String targetId String action String reason String? createdAt DateTime @default(now()) }
-model Notification { id String @id @default(uuid()) userId String type NotificationType title String body String isRead Boolean @default(false) user User @relation(fields: [userId], references: [id]) createdAt DateTime @default(now()) }
-model AdminNote { id String @id @default(uuid()) userId String authorId String note String createdAt DateTime @default(now()) user User @relation(fields: [userId], references: [id]) }
-model AuditLog { id String @id @default(uuid()) actorUserId String action AuditAction targetType String targetId String meta Json? createdAt DateTime @default(now()) actor User @relation(fields: [actorUserId], references: [id]) }
-model Language { code String @id name String isRtl Boolean @default(false) }
+model Post {
+  id         String     @id @default(uuid())
+  userId     String
+  body       String
+  createdAt  DateTime   @default(now())
+
+  user       User       @relation(fields: [userId], references: [id])
+  media      PostMedia[]
+  comments   Comment[]
+  reactions  Reaction[]
+}
+
+model PostMedia {
+  id         String   @id @default(uuid())
+  postId     String
+  url        String
+  mimeType   String
+
+  post       Post     @relation(fields: [postId], references: [id])
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  postId     String
+  userId     String
+  body       String
+  createdAt  DateTime @default(now())
+
+  post       Post     @relation(fields: [postId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model Reaction {
+  id         String   @id @default(uuid())
+  postId     String
+  userId     String
+  type       String
+
+  post       Post     @relation(fields: [postId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId, type])
+}
+
+model Group {
+  id         String       @id @default(uuid())
+  name       String
+  description String?
+  isPrivate  Boolean      @default(false)
+
+  members    GroupMember[]
+}
+
+model GroupMember {
+  id         String   @id @default(uuid())
+  groupId    String
+  userId     String
+  role       String
+  joinedAt   DateTime @default(now())
+
+  group      Group    @relation(fields: [groupId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model Resource {
+  id          String        @id @default(uuid())
+  title       String
+  description String?
+  ownerUserId String
+
+  owner       User          @relation(fields: [ownerUserId], references: [id])
+  files       ResourceFile[]
+}
+
+model ResourceFile {
+  id          String   @id @default(uuid())
+  resourceId  String
+  fileUrl     String
+
+  resource    Resource @relation(fields: [resourceId], references: [id])
+}
+
+model ExamSet {
+  id          String   @id @default(uuid())
+  title       String
+  subject     String
+  year        Int
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  reporterId  String
+  targetType  String
+  targetId    String
+  reason      String
+  createdAt   DateTime @default(now())
+
+  reporter    User     @relation("Reporter", fields: [reporterId], references: [id])
+}
+
+model ModerationAction {
+  id          String   @id @default(uuid())
+  targetType  String
+  targetId    String
+  action      ReviewAction
+  reason      String?
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String
+  type        NotificationType
+  title       String
+  body        String
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  user        User             @relation(fields: [userId], references: [id])
+}
+
+model AdminNote {
+  id          String   @id @default(uuid())
+  userId      String
+  authorId    String
+  note        String
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model AuditLog {
+  id          String    @id @default(uuid())
+  actorUserId String
+  action      AuditAction
+  targetType  String
+  targetId    String
+  meta        Json?
+  createdAt   DateTime  @default(now())
+
+  actor       User      @relation(fields: [actorUserId], references: [id])
+}
+
+model Language {
+  code        String   @id
+  name        String
+  isRtl       Boolean  @default(false)
+}
