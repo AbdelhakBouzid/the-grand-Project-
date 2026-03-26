@@ -75,6 +75,19 @@ Production-grade MVP monorepo for a global student-only social learning platform
 - `/resources`
 - `/exams`
 
+
+## Production database migrations (Vercel + Neon)
+- Prisma migrations are now committed under `apps/api/prisma/migrations`.
+- For production/staging deploys, run **deploy migrations** (never `migrate dev`):
+  - `npm run db:migrate:deploy` (repo root), or
+  - `npm run prisma:migrate:deploy -w @eduworld/api`.
+- Recommended Vercel backend Build Command:
+  - `npm run build:vercel -w @eduworld/api`
+  - This runs `prisma generate`, then `prisma migrate deploy`, then the Nest build.
+- Required env vars on Vercel backend project:
+  - `DATABASE_URL` (Neon connection string)
+  - `DIRECT_URL` (optional but recommended for Prisma migrations/introspection if you use pooled URLs).
+
 ## Tests
 - `npm run test -w @eduworld/api`
 - Includes auth, verification/reviewer services, and new feed/groups service tests.

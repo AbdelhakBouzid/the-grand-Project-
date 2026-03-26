@@ -12,6 +12,7 @@
     "test": "npm run test -w @eduworld/api",
     "db:generate": "npm run prisma:generate -w @eduworld/api",
     "db:migrate": "npm run prisma:migrate -w @eduworld/api",
-    "db:seed": "npm run prisma:seed -w @eduworld/api"
+    "db:seed": "npm run prisma:seed -w @eduworld/api",
+    "db:migrate:deploy": "npm run prisma:migrate:deploy -w @eduworld/api"
   }
 }
