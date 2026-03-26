@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shell } from '../../components/shell';
 import { getCurrentUser } from '../../lib/api';
+import { resolvePostAuthRoute } from '../../lib/routing';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,19 +35,12 @@ export default function LoginPage() {
         localStorage.setItem('refreshToken', data.refreshToken);
       }
 
-      let destination = '/feed';
+      let destination = '/onboarding';
       try {
         const me = await getCurrentUser(data.accessToken);
-
-        if (me?.role === 'super_admin') {
-          destination = '/admin/reviews';
-        } else if (me?.status === 'pending') {
-          destination = '/pending-review';
-        } else if (me?.status === 'approved' && !me?.institutionId) {
-          destination = '/onboarding';
-        }
+        destination = resolvePostAuthRoute(me);
       } catch (error) {
-        console.error('Could not load current user after login; falling back to /feed', error);
+        console.error('Could not load current user after login; falling back to /onboarding', error);
       }
 
       router.replace(destination);

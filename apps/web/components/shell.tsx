@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { getAccessToken, parseAccessToken } from '../lib/api';
+import { getAccessToken, getCurrentUser, parseAccessToken, type CurrentUser } from '../lib/api';
 
 type ShellProps = {
   title: string;
@@ -18,7 +18,7 @@ const basePrimaryNav = [
   { href: '/exams', label: 'Exams' },
 ];
 
-const accountNav = [
+const guestAccountNav = [
   { href: '/login', label: 'Login' },
   { href: '/signup', label: 'Sign up' },
 ];
@@ -26,11 +26,40 @@ const accountNav = [
 export function Shell({ title, subtitle, children }: ShellProps) {
   const token = useMemo(() => getAccessToken(), []);
   const payload = useMemo(() => parseAccessToken(token), [token]);
-  const canSeeAdmin = payload?.role === 'super_admin' || payload?.role === 'reviewer';
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+
+    let mounted = true;
+    void getCurrentUser(token)
+      .then((user) => {
+        if (mounted) setCurrentUser(user);
+      })
+      .catch(() => {
+        if (mounted) setCurrentUser(null);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [token]);
+
+  const role = currentUser?.role ?? payload?.role;
+  const status = currentUser?.status;
+  const canSeeAdmin = role === 'super_admin' || role === 'reviewer';
+  const isAuthenticated = Boolean(token);
 
   const primaryNav = canSeeAdmin
     ? [...basePrimaryNav, { href: '/admin/reviews', label: 'Admin' }]
     : basePrimaryNav;
+
+  function logout() {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    setCurrentUser(null);
+    window.location.href = '/login';
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-slate-50">
@@ -44,12 +73,24 @@ export function Shell({ title, subtitle, children }: ShellProps) {
               <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">{title}</h1>
               {subtitle ? <p className="mt-1 text-sm text-slate-600">{subtitle}</p> : null}
             </div>
-            <div className="flex flex-wrap gap-2">
-              {accountNav.map((item) => (
-                <Link key={item.href} href={item.href} className="btn-secondary text-xs sm:text-sm">
-                  {item.label}
-                </Link>
-              ))}
+            <div className="flex flex-wrap items-center gap-2">
+              {isAuthenticated ? (
+                <>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">
+                    {currentUser?.email ?? payload?.email ?? 'Signed in'}
+                    {status ? ` · ${status}` : ''}
+                  </span>
+                  <button type="button" onClick={logout} className="btn-secondary text-xs sm:text-sm">
+                    Logout
+                  </button>
+                </>
+              ) : (
+                guestAccountNav.map((item) => (
+                  <Link key={item.href} href={item.href} className="btn-secondary text-xs sm:text-sm">
+                    {item.label}
+                  </Link>
+                ))
+              )}
             </div>
           </div>
           <nav className="mt-4 flex flex-wrap gap-2">

@@ -45,7 +45,7 @@ export default function AdminReviewListPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [reasonById, setReasonById] = useState<Record<string, string>>({});
 
-  const isAdmin = payload?.role === 'super_admin';
+  const isAdmin = payload?.role === 'super_admin' || payload?.role === 'reviewer';
 
   const loadDashboard = useCallback(async () => {
     if (!token) return;
@@ -77,7 +77,7 @@ export default function AdminReviewListPage() {
     }
 
     if (!isAdmin) {
-      setError('Only super admins can access this dashboard.');
+      setError('Only reviewers and super admins can access this dashboard.');
       setLoading(false);
       return;
     }
@@ -133,7 +133,11 @@ export default function AdminReviewListPage() {
           ? 'Request for more information has been sent.'
           : `User ${action === 'approve' ? 'approved' : 'rejected'} successfully.`,
       );
-      await loadDashboard();
+      if (action !== 'request_info') {
+        setUsers((prev) => prev.filter((item) => item.id !== userId));
+      } else {
+        await loadDashboard();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : `Failed to ${action} user.`);
     } finally {
@@ -171,7 +175,11 @@ export default function AdminReviewListPage() {
           ? 'Institution request marked as more information requested.'
           : `Institution request ${action === 'approve' ? 'approved' : 'rejected'} successfully.`,
       );
-      await loadDashboard();
+      if (action !== 'request_info') {
+        setInstitutionRequests((prev) => prev.filter((item) => item.id !== requestId));
+      } else {
+        await loadDashboard();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : `Failed to ${action} institution request.`);
     } finally {

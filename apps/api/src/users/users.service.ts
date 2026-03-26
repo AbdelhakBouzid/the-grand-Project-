@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { AccountStatus } from '@prisma/client';
+import { AccountStatus, InstitutionRequestStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AdminApprovalAction } from './dto';
 
@@ -7,11 +7,27 @@ import { AdminApprovalAction } from './dto';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  getMe(userId: string) {
-    return this.prisma.user.findUnique({
+  async getMe(userId: string) {
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { profile: true, institution: true },
+      include: {
+        profile: true,
+        institution: true,
+        institutionRequests: {
+          where: { status: InstitutionRequestStatus.pending },
+          select: { id: true },
+          take: 1,
+        },
+      },
     });
+
+    if (!user) return null;
+
+    const { institutionRequests, ...rest } = user;
+    return {
+      ...rest,
+      hasPendingInstitutionRequest: institutionRequests.length > 0,
+    };
   }
 
   listPendingUsers() {
