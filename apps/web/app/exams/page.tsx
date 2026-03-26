@@ -14,7 +14,6 @@ type Exam = {
 
 type ExamsResponse = {
   items: Exam[];
-  total: number;
 };
 
 const CREATOR_ROLES = new Set(['teacher', 'institution_admin', 'super_admin']);
@@ -93,45 +92,50 @@ export default function ExamsPage() {
   }
 
   return (
-    <Shell title="Exam Archive">
+    <Shell title="Exam Archive" subtitle="Find past exams and practice by subject and year.">
       <div className="space-y-6">
-        <form onSubmit={applyFilters} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-3">
-          <input value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)} placeholder="Filter by subject" className="rounded-lg border border-slate-300 p-2 text-sm" />
-          <input value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} placeholder="Filter by year" className="rounded-lg border border-slate-300 p-2 text-sm" />
-          <button className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-100">Apply filters</button>
+        <form onSubmit={applyFilters} className="card grid gap-3 bg-slate-50 p-4 sm:grid-cols-3">
+          <input value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)} placeholder="Filter by subject" className="input" />
+          <input value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} placeholder="Filter by year" className="input" />
+          <button className="btn-secondary">Apply filters</button>
         </form>
 
-        {canCreate && (
-          <form onSubmit={onCreateExam} className="grid gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 sm:grid-cols-3">
-            <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Exam title" className="rounded-lg border border-blue-200 p-2 text-sm" />
-            <input value={subject} onChange={(e) => setSubject(e.target.value)} required placeholder="Subject" className="rounded-lg border border-blue-200 p-2 text-sm" />
+        {canCreate ? (
+          <form onSubmit={onCreateExam} className="card grid gap-3 border-blue-200 bg-blue-50 p-4 sm:grid-cols-3">
+            <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Exam title" className="input" />
+            <input value={subject} onChange={(e) => setSubject(e.target.value)} required placeholder="Subject" className="input" />
             <div className="flex gap-2">
-              <input value={year} onChange={(e) => setYear(e.target.value)} required placeholder="Year" className="w-full rounded-lg border border-blue-200 p-2 text-sm" />
-              <button disabled={creating} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">{creating ? 'Saving…' : 'Create'}</button>
+              <input value={year} onChange={(e) => setYear(e.target.value)} required placeholder="Year" className="input" />
+              <button disabled={creating} className="btn-primary">{creating ? 'Saving…' : 'Create'}</button>
             </div>
           </form>
+        ) : (
+          <p className="text-xs text-slate-500">Only teachers/admin users can add exam sets.</p>
         )}
 
-        {!canCreate && <p className="text-xs text-slate-500">Only teachers/admin users can add exam sets.</p>}
-
-        {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        {error ? (
+          <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            <p>{error}</p>
+            <button onClick={() => void loadExams()} className="mt-3 btn-secondary text-xs">Try again</button>
+          </div>
+        ) : null}
 
         {loading ? (
           <div className="space-y-3">
-            <div className="h-20 animate-pulse rounded-lg bg-slate-100" />
-            <div className="h-20 animate-pulse rounded-lg bg-slate-100" />
+            <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
+            <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
           </div>
         ) : exams.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-8 text-center text-sm text-slate-600">No exams found for the current filters.</div>
+          <div className="card border-dashed p-8 text-center text-sm text-slate-600">No exams found for the current filters.</div>
         ) : (
           <ul className="space-y-3">
             {exams.map((exam) => (
-              <li key={exam.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <li key={exam.id} className="card p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="text-sm font-semibold text-slate-800">{exam.title}</h3>
-                  <span className="text-xs text-slate-500">{exam.year}</span>
+                  <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">{exam.year}</span>
                 </div>
-                <p className="text-sm text-slate-600">{exam.subject}</p>
+                <p className="mt-1 text-sm text-slate-600">{exam.subject}</p>
               </li>
             ))}
           </ul>
