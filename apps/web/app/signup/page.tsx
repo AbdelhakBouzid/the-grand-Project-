@@ -15,8 +15,10 @@ type AuthResponse = {
 export default function SignupPage() {
   const router = useRouter();
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function submit(formData: FormData) {
+    setIsSubmitting(true);
     setMessage('');
 
     const payload = Object.fromEntries(formData.entries());
@@ -38,11 +40,13 @@ export default function SignupPage() {
       if (!res.ok) {
         const apiMessage = typeof data?.message === 'string' ? data.message : null;
         setMessage(apiMessage || 'Signup failed. Please try again.');
+        setIsSubmitting(false);
         return;
       }
 
       if (typeof data?.accessToken !== 'string' || data.accessToken.length === 0) {
         setMessage('Signup succeeded, but no session token was returned. Please log in.');
+        setIsSubmitting(false);
         return;
       }
 
@@ -52,10 +56,11 @@ export default function SignupPage() {
       }
 
       setMessage('Account created. Redirecting...');
-      router.push('/onboarding');
+      router.replace('/onboarding');
     } catch (error) {
       console.error('Signup submit crashed', error);
       setMessage('Unable to sign up right now. Please try again in a moment.');
+      setIsSubmitting(false);
     }
   }
 
@@ -64,7 +69,7 @@ export default function SignupPage() {
       <form action={submit} className="mx-auto grid w-full max-w-md gap-3">
         <input className="input" name="email" type="email" placeholder="Email" required />
         <input className="input" name="password" type="password" placeholder="Password" required />
-        <button className="btn-primary">Create account</button>
+        <button className="btn-primary" disabled={isSubmitting}>{isSubmitting ? 'Creating account…' : 'Create account'}</button>
         {message ? <p className="text-sm text-slate-600">{message}</p> : null}
       </form>
     </Shell>
