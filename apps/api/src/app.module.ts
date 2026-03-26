@@ -14,8 +14,10 @@ import { ResourcesModule } from './resources/resources.module';
 import { ExamsModule } from './exams/exams.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ModerationModule } from './moderation/moderation.module';
+import { HealthController } from './health.controller';
 
 @Module({
+  controllers: [HealthController],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
