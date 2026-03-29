@@ -118,14 +118,14 @@ export default function ExamsPage() {
   return (
     <Shell title="Exam Archive" subtitle="Find past exams and practice by subject and year.">
       <div className="space-y-6">
-        <form onSubmit={applyFilters} className="card grid gap-3 bg-slate-50 p-4 sm:grid-cols-3">
+        <form onSubmit={applyFilters} className="card grid gap-3 bg-slate-50/80 p-4 sm:grid-cols-3 sm:p-5">
           <input value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)} placeholder="Filter by subject" className="input" />
           <input value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} placeholder="Filter by year" className="input" />
           <button className="btn-secondary">Apply filters</button>
         </form>
 
         {canCreate ? (
-          <form onSubmit={onCreateExam} className="card grid gap-3 border-blue-200 bg-blue-50 p-4 sm:grid-cols-3">
+          <form onSubmit={onCreateExam} className="card grid gap-3 border-blue-100 bg-blue-50/70 p-4 sm:grid-cols-3 sm:p-5">
             <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Exam title" className="input" disabled={pendingApproval} />
             <input value={subject} onChange={(e) => setSubject(e.target.value)} required placeholder="Subject" className="input" disabled={pendingApproval} />
             <div className="flex gap-2">
@@ -137,10 +137,10 @@ export default function ExamsPage() {
           <p className="text-xs text-slate-500">Only teachers/admin users can add exam sets.</p>
         )}
 
-        {pendingApproval ? <div className="card border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">Your account is pending review. Access will unlock automatically once approved.</div> : null}
+        {pendingApproval ? <div className="status-note status-note-warning">Your account is pending review. Access will unlock automatically once approved.</div> : null}
 
         {error ? (
-          <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="status-note status-note-error">
             <p>{error}</p>
             <button onClick={() => void loadExams()} className="mt-3 btn-secondary text-xs">Try again</button>
           </div>
@@ -152,11 +152,11 @@ export default function ExamsPage() {
             <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
           </div>
         ) : exams.length === 0 ? (
-          <div className="card border-dashed p-8 text-center text-sm text-slate-600">No exams found for the current filters.</div>
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center text-sm text-slate-600">No exams found for the current filters.</div>
         ) : (
           <ul className="space-y-3">
             {exams.map((exam) => (
-              <li key={exam.id} className="card p-4">
+              <li key={exam.id} className="card p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="text-sm font-semibold text-slate-800">{exam.title}</h3>
                   <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">{exam.year}</span>

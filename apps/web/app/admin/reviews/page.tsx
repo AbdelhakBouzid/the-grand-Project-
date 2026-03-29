@@ -197,8 +197,8 @@ export default function AdminReviewListPage() {
           </button>
         </div>
 
-        {error ? <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div> : null}
-        {success ? <div className="card border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">{success}</div> : null}
+        {error ? <div className="status-note status-note-error">{error}</div> : null}
+        {success ? <div className="status-note status-note-success">{success}</div> : null}
 
         {loading ? (
           <div className="space-y-3">
@@ -214,7 +214,7 @@ export default function AdminReviewListPage() {
               ) : (
                 <ul className="space-y-3">
                   {users.map((user) => (
-                    <li key={user.id} className="card p-4">
+                    <li key={user.id} className="card p-4 sm:p-5">
                       <div className="space-y-3">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div>
@@ -254,7 +254,7 @@ export default function AdminReviewListPage() {
               ) : (
                 <ul className="space-y-3">
                   {institutionRequests.map((request) => (
-                    <li key={request.id} className="card p-4">
+                    <li key={request.id} className="card p-4 sm:p-5">
                       <div className="space-y-3">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div>

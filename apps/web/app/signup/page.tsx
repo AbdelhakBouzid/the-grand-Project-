@@ -75,12 +75,18 @@ export default function SignupPage() {
   }
 
   return (
-    <Shell title="Create your account" subtitle="Join your verified institution community.">
-      <form action={submit} className="mx-auto grid w-full max-w-md gap-3">
-        <input className="input" name="email" type="email" placeholder="Email" required />
-        <input className="input" name="password" type="password" placeholder="Password" required />
+    <Shell title="Create account" subtitle="Join your verified institution community.">
+      <form action={submit} className="mx-auto grid w-full max-w-md gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700">Email</label>
+          <input className="input" name="email" type="email" placeholder="you@institution.edu" required />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700">Password</label>
+          <input className="input" name="password" type="password" placeholder="Minimum 8 characters" required />
+        </div>
         <button className="btn-primary" disabled={isSubmitting}>{isSubmitting ? 'Creating account…' : 'Create account'}</button>
-        {message ? <p className="text-sm text-slate-600">{message}</p> : null}
+        {message ? <p className="status-note status-note-success">{message}</p> : null}
       </form>
     </Shell>
   );

@@ -26,17 +26,31 @@ export default function OnboardingPage() {
   }
 
   return (
-    <Shell title="Onboarding" subtitle="Request institution approval to unlock your account.">
-      <form action={submit} className="mx-auto grid w-full max-w-lg gap-3">
-        <input className="input" name="name" placeholder="Institution Name" required />
-        <input className="input" name="countryCode" placeholder="Country Code" required />
-        <input className="input" name="city" placeholder="City" />
-        <select className="input" name="isPublic">
-          <option value="true">Public</option>
-          <option value="false">Private</option>
-        </select>
+    <Shell title="Onboarding" subtitle="Submit your institution profile to unlock your full account.">
+      <form action={submit} className="mx-auto grid w-full max-w-lg gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700">Institution Name</label>
+          <input className="input" name="name" placeholder="University name" required />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Country Code</label>
+            <input className="input" name="countryCode" placeholder="US" required />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">City</label>
+            <input className="input" name="city" placeholder="City" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700">Institution Visibility</label>
+          <select className="input" name="isPublic">
+            <option value="true">Public</option>
+            <option value="false">Private</option>
+          </select>
+        </div>
         <button className="btn-primary">Submit request</button>
-        {status ? <p className="text-sm text-slate-600">{status}</p> : null}
+        {status ? <p className="status-note status-note-warning">{status}</p> : null}
       </form>
     </Shell>
   );

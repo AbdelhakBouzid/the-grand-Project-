@@ -112,7 +112,7 @@ export default function GroupsPage() {
   return (
     <Shell title="Study Groups" subtitle="Create or join focused learning communities.">
       <div className="space-y-6">
-        <form onSubmit={onCreateGroup} className="card grid gap-3 bg-slate-50 p-4">
+        <form onSubmit={onCreateGroup} className="card grid gap-3 bg-slate-50/80 p-4 sm:p-5">
           <h2 className="text-base font-semibold">Create a group</h2>
           <input value={name} onChange={(e) => setName(e.target.value)} required placeholder="Group name" className="input" disabled={pendingApproval} />
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="textarea" disabled={pendingApproval} />
@@ -123,10 +123,10 @@ export default function GroupsPage() {
           <button disabled={creating || pendingApproval} className="btn-primary w-fit">{creating ? 'Creating…' : 'Create Group'}</button>
         </form>
 
-        {pendingApproval ? <div className="card border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">Your account is pending review. Access will unlock automatically once approved.</div> : null}
+        {pendingApproval ? <div className="status-note status-note-warning">Your account is pending review. Access will unlock automatically once approved.</div> : null}
 
         {error ? (
-          <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="status-note status-note-error">
             <p>{error}</p>
             <button onClick={() => void loadGroups()} className="mt-3 btn-secondary text-xs">Try again</button>
           </div>
@@ -138,11 +138,11 @@ export default function GroupsPage() {
             <div className="h-32 animate-pulse rounded-xl bg-slate-100" />
           </div>
         ) : groups.length === 0 ? (
-          <div className="card border-dashed p-8 text-center text-sm text-slate-600">No groups yet. Create one to start collaborating.</div>
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center text-sm text-slate-600">No groups yet. Create one to start collaborating.</div>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
             {groups.map((group) => (
-              <li key={group.id} className="card p-4">
+              <li key={group.id} className="card p-4 sm:p-5">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <h3 className="text-sm font-semibold text-slate-800">{group.name}</h3>
                   <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">{group.isPrivate ? 'Private' : 'Public'}</span>

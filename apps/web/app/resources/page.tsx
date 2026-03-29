@@ -105,7 +105,7 @@ export default function ResourcesPage() {
   return (
     <Shell title="Educational Resources" subtitle="Share notes and useful links with your classmates.">
       <div className="space-y-6">
-        <form onSubmit={onCreateResource} className="card grid gap-3 bg-slate-50 p-4">
+        <form onSubmit={onCreateResource} className="card grid gap-3 bg-slate-50/80 p-4 sm:p-5">
           <h2 className="text-base font-semibold">Upload or link a resource</h2>
           <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Resource title" className="input" disabled={pendingApproval} />
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="textarea" disabled={pendingApproval} />
@@ -121,10 +121,10 @@ export default function ResourcesPage() {
           </button>
         </form>
 
-        {pendingApproval ? <div className="card border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">Your account is pending review. Access will unlock automatically once approved.</div> : null}
+        {pendingApproval ? <div className="status-note status-note-warning">Your account is pending review. Access will unlock automatically once approved.</div> : null}
 
         {error ? (
-          <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="status-note status-note-error">
             <p>{error}</p>
             <button onClick={() => void loadResources()} className="mt-3 btn-secondary text-xs">Try again</button>
           </div>
@@ -136,11 +136,11 @@ export default function ResourcesPage() {
             <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
           </div>
         ) : resources.length === 0 ? (
-          <div className="card border-dashed p-8 text-center text-sm text-slate-600">No resources yet. Add one to help classmates.</div>
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center text-sm text-slate-600">No resources yet. Add one to help classmates.</div>
         ) : (
           <ul className="space-y-3">
             {resources.map((resource) => (
-              <li key={resource.id} className="card p-4">
+              <li key={resource.id} className="card p-4 sm:p-5">
                 <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
                   <h3 className="text-sm font-semibold text-slate-800">{resource.title}</h3>
                   <span className="text-xs text-slate-500">{resource.owner?.email ?? 'Unknown uploader'}</span>
