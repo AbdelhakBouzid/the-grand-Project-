@@ -2,28 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg: #f3f6fb;
+  --surface: #ffffff;
+  --surface-soft: #f8fafc;
+  --text: #0f172a;
+  --muted: #64748b;
+  --primary: #2563eb;
+  --primary-strong: #1d4ed8;
+  --ring: rgba(37, 99, 235, 0.28);
+}
+
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply min-h-screen antialiased;
+  background: radial-gradient(circle at top, #eff6ff 0%, var(--bg) 40%, #eef2ff 100%);
+  color: var(--text);
 }
 
 @layer components {
+  .glass {
+    @apply border border-white/70 bg-white/85 shadow-lg shadow-slate-900/5 backdrop-blur;
+  }
+
   .card {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+    @apply glass rounded-2xl;
+  }
+
+  .panel-title {
+    @apply text-base font-semibold text-slate-900 sm:text-lg;
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center rounded-xl border border-blue-600 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition;
+  }
+
+  .btn-primary:hover {
+    @apply -translate-y-0.5 bg-blue-700;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100;
+    @apply inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition;
+  }
+
+  .btn-secondary:hover {
+    @apply -translate-y-0.5 border-slate-300 bg-slate-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition;
+  }
+
+  .btn-ghost:hover {
+    @apply bg-slate-100 text-slate-900;
   }
 
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-blue-500 focus:ring;
+    @apply w-full rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 text-sm text-slate-800 shadow-sm outline-none transition;
+  }
+
+  .input:focus {
+    @apply border-blue-400;
+    box-shadow: 0 0 0 3px var(--ring);
   }
 
   .textarea {
     @apply input min-h-24;
+  }
+
+  .status-note {
+    @apply rounded-xl border px-4 py-3 text-sm;
+  }
+
+  .status-note-warning {
+    @apply border-amber-200 bg-amber-50/90 text-amber-800;
+  }
+
+  .status-note-error {
+    @apply border-red-200 bg-red-50/90 text-red-700;
+  }
+
+  .status-note-success {
+    @apply border-emerald-200 bg-emerald-50/90 text-emerald-700;
   }
 }

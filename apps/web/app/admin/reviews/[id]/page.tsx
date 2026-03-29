@@ -155,8 +155,8 @@ export default function AdminReviewDetailPage({ params }: { params: { id: string
   return (
     <Shell title={`Review ${params.id}`} subtitle="Approve, reject, or request more information.">
       <div className="space-y-4">
-        {error ? <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div> : null}
-        {success ? <div className="card border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">{success}</div> : null}
+        {error ? <div className="status-note status-note-error">{error}</div> : null}
+        {success ? <div className="status-note status-note-success">{success}</div> : null}
 
         {loading ? <div className="h-24 animate-pulse rounded-xl bg-slate-100" /> : null}
 

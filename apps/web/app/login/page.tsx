@@ -25,7 +25,7 @@ export default function LoginPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok || typeof data?.accessToken !== 'string' || data.accessToken.length === 0) {
-        setMessage('Login failed.');
+        setMessage('Login failed. Please check your credentials.');
         setIsSubmitting(false);
         return;
       }
@@ -52,13 +52,19 @@ export default function LoginPage() {
   }
 
   return (
-    <Shell title="Login" subtitle="Access your student account.">
-      <form action={submit} className="mx-auto grid w-full max-w-md gap-3">
-        <input className="input" name="email" type="email" required placeholder="Email" />
-        <input className="input" name="password" type="password" required placeholder="Password" />
+    <Shell title="Welcome back" subtitle="Log in to continue your learning workflow.">
+      <form action={submit} className="mx-auto grid w-full max-w-md gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700">Email</label>
+          <input className="input" name="email" type="email" required placeholder="you@institution.edu" />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700">Password</label>
+          <input className="input" name="password" type="password" required placeholder="••••••••" />
+        </div>
         <button className="btn-primary" disabled={isSubmitting}>{isSubmitting ? 'Logging in…' : 'Login'}</button>
-        {message ? <p className="text-sm text-slate-600">{message}</p> : null}
-        <p className="text-sm text-slate-600">Need an account? <Link href="/signup" className="text-blue-700 underline">Sign up</Link></p>
+        {message ? <p className="status-note status-note-error">{message}</p> : null}
+        <p className="text-sm text-slate-600">Need an account? <Link href="/signup" className="font-medium text-blue-700 underline">Sign up</Link></p>
       </form>
     </Shell>
   );

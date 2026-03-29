@@ -17,13 +17,22 @@ export default function VerificationPage() {
   }
 
   return (
-    <Shell title="Verification" subtitle="Upload your documents for manual review.">
-      <form action={submit} className="mx-auto grid w-full max-w-lg gap-3">
-        <input className="input" name="institutionId" placeholder="Institution ID" required />
-        <textarea className="textarea" name="note" placeholder="Optional note" />
-        <input className="input" type="file" name="documents" accept=".pdf,.png,.jpg,.jpeg" multiple required />
+    <Shell title="Verification" subtitle="Upload your documents for manual reviewer validation.">
+      <form action={submit} className="mx-auto grid w-full max-w-lg gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700">Institution ID</label>
+          <input className="input" name="institutionId" placeholder="Institution UUID" required />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700">Note (optional)</label>
+          <textarea className="textarea" name="note" placeholder="Anything reviewers should know" />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700">Supporting documents</label>
+          <input className="input" type="file" name="documents" accept=".pdf,.png,.jpg,.jpeg" multiple required />
+        </div>
         <button className="btn-primary">Submit for review</button>
-        {status ? <p className="text-sm text-slate-600">{status}</p> : null}
+        {status ? <p className="status-note status-note-warning">{status}</p> : null}
       </form>
     </Shell>
   );

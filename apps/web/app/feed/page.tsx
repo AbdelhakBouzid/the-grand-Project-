@@ -100,7 +100,7 @@ export default function FeedPage() {
   return (
     <Shell title="Community Feed" subtitle="Share updates, ask questions, and learn together.">
       <div className="space-y-6">
-        <form onSubmit={onCreatePost} className="card grid gap-3 bg-slate-50 p-4">
+        <form onSubmit={onCreatePost} className="card grid gap-3 bg-slate-50/80 p-4 sm:p-5">
           <label className="text-sm font-medium text-slate-700">Create a post</label>
           <textarea
             value={newPost}
@@ -117,10 +117,10 @@ export default function FeedPage() {
           </div>
         </form>
 
-        {pendingApproval ? <div className="card border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{APPROVAL_MESSAGE}</div> : null}
+        {pendingApproval ? <div className="status-note status-note-warning">{APPROVAL_MESSAGE}</div> : null}
 
         {error ? (
-          <div className="card border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="status-note status-note-error">
             <p>{error}</p>
             <button onClick={() => void loadPosts()} className="mt-3 btn-secondary text-xs">Try again</button>
           </div>
@@ -133,13 +133,13 @@ export default function FeedPage() {
             <div className="h-28 animate-pulse rounded-xl bg-slate-100" />
           </div>
         ) : posts.length === 0 ? (
-          <div className="card border-dashed p-8 text-center text-sm text-slate-600">
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center text-sm text-slate-600">
             No posts yet. Create the first post to start your institution feed.
           </div>
         ) : (
           <ul className="space-y-3">
             {posts.map((post) => (
-              <li key={post.id} className="card p-4">
+              <li key={post.id} className="card p-4 sm:p-5">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <p className="text-sm font-medium text-slate-800">{post.user?.email ?? 'Unknown user'}</p>
                   <p className="text-xs text-slate-500">{new Date(post.createdAt).toLocaleString()}</p>
