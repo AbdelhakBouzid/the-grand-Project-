@@ -62,13 +62,13 @@ export function Shell({ title, subtitle, children }: ShellProps) {
   }
 
   return (
-    <main className="min-h-screen">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-3 py-4 sm:px-5 lg:px-8">
-        <header className="card overflow-hidden p-4 sm:p-5">
+    <main className="min-h-screen px-3 py-4 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
+      <div className="mx-auto w-full max-w-7xl space-y-4">
+        <header className="card sticky top-3 z-20 overflow-hidden p-4 sm:p-5">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <Link href="/" className="inline-flex rounded-full border border-blue-300/30 bg-blue-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blue-200">
+                <Link href="/" className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-violet-700">
                   EduWorld
                 </Link>
                 <h1 className="page-title mt-3">{title}</h1>
@@ -77,7 +77,7 @@ export function Shell({ title, subtitle, children }: ShellProps) {
               <div className="flex flex-wrap items-center gap-2">
                 {isAuthenticated ? (
                   <>
-                    <span className="rounded-full border border-slate-600 bg-slate-800/70 px-3 py-1 text-xs text-slate-300">
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600">
                       {currentUser?.email ?? payload?.email ?? 'Signed in'}
                       {status ? ` · ${status}` : ''}
                     </span>
@@ -94,29 +94,66 @@ export function Shell({ title, subtitle, children }: ShellProps) {
                 )}
               </div>
             </div>
+            <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+              <label className="input flex items-center gap-2 rounded-full px-4">
+                <span className="text-slate-400">⌕</span>
+                <input disabled placeholder="Search communities, resources, and exams" className="w-full bg-transparent text-sm text-slate-500 outline-none" />
+              </label>
+              <nav className="flex gap-2 overflow-x-auto pb-1 md:justify-end">
+                {primaryNav.map((item) => {
+                  const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide transition sm:text-sm ${
+                        active
+                          ? 'bg-violet-100 text-violet-700'
+                          : 'bg-slate-100 text-slate-600 hover:bg-violet-50 hover:text-violet-700'
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          </div>
+        </header>
 
-            <nav className="flex gap-2 overflow-x-auto pb-1">
+        <div className="grid gap-4 lg:grid-cols-[15rem_minmax(0,1fr)_15rem]">
+          <aside className="card hidden h-fit p-4 lg:block">
+            <p className="section-heading">Navigation</p>
+            <div className="mt-3 space-y-2">
               {primaryNav.map((item) => {
                 const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
                 return (
                   <Link
-                    key={item.href}
+                    key={`side-${item.href}`}
                     href={item.href}
-                    className={`whitespace-nowrap rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-wide transition sm:text-sm ${
-                      active
-                        ? 'border border-blue-300/50 bg-blue-500/20 text-blue-100'
-                        : 'border border-transparent bg-slate-800/40 text-slate-300 hover:border-slate-500 hover:bg-slate-800/70 hover:text-white'
+                    className={`block rounded-2xl px-3 py-2 text-sm font-medium transition ${
+                      active ? 'bg-violet-100 text-violet-700' : 'text-slate-600 hover:bg-slate-100'
                     }`}
                   >
                     {item.label}
                   </Link>
                 );
               })}
-            </nav>
-          </div>
-        </header>
+            </div>
+          </aside>
 
-        <section className="card p-4 sm:p-6">{children}</section>
+          <section className="card p-4 sm:p-6">{children}</section>
+
+          <aside className="card hidden h-fit space-y-3 p-4 lg:block">
+            <p className="section-heading">Quick Tips</p>
+            <div className="rounded-2xl border border-violet-100 bg-violet-50 p-3 text-sm text-violet-700">
+              Complete onboarding to unlock posting and collaborations.
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+              Review feed, groups, resources, and exams from one consistent workspace.
+            </div>
+          </aside>
+        </div>
       </div>
     </main>
   );

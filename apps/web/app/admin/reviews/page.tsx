@@ -202,15 +202,15 @@ export default function AdminReviewListPage() {
 
         {loading ? (
           <div className="space-y-3">
-            <div className="h-24 animate-pulse rounded-xl bg-slate-800" />
-            <div className="h-24 animate-pulse rounded-xl bg-slate-800" />
+            <div className="h-24 animate-pulse rounded-xl bg-slate-200" />
+            <div className="h-24 animate-pulse rounded-xl bg-slate-200" />
           </div>
         ) : (
           <>
             <section className="space-y-3">
-              <h2 className="text-base font-semibold text-slate-100">Pending users ({users.length})</h2>
+              <h2 className="text-base font-semibold text-slate-900">Pending users ({users.length})</h2>
               {users.length === 0 ? (
-                <p className="card border-dashed p-4 text-sm text-slate-400">No pending users.</p>
+                <p className="card border-dashed p-4 text-sm text-slate-500">No pending users.</p>
               ) : (
                 <ul className="space-y-3">
                   {users.map((user) => (
@@ -218,7 +218,7 @@ export default function AdminReviewListPage() {
                       <div className="space-y-3">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div>
-                            <p className="text-sm font-semibold text-slate-100">{user.email}</p>
+                            <p className="text-sm font-semibold text-slate-900">{user.email}</p>
                             <p className="text-xs text-slate-500">Role: {user.role} · Created: {new Date(user.createdAt).toLocaleString()}</p>
                             <p className="text-xs text-slate-500">Institution: {user.institution?.name ?? 'Not linked yet'}</p>
                           </div>
@@ -248,9 +248,9 @@ export default function AdminReviewListPage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-base font-semibold text-slate-100">Pending institution requests ({institutionRequests.length})</h2>
+              <h2 className="text-base font-semibold text-slate-900">Pending institution requests ({institutionRequests.length})</h2>
               {institutionRequests.length === 0 ? (
-                <p className="card border-dashed p-4 text-sm text-slate-400">No pending institution requests.</p>
+                <p className="card border-dashed p-4 text-sm text-slate-500">No pending institution requests.</p>
               ) : (
                 <ul className="space-y-3">
                   {institutionRequests.map((request) => (
@@ -258,7 +258,7 @@ export default function AdminReviewListPage() {
                       <div className="space-y-3">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div>
-                            <p className="text-sm font-semibold text-slate-100">{request.name}</p>
+                            <p className="text-sm font-semibold text-slate-900">{request.name}</p>
                             <p className="text-xs text-slate-500">{request.city ? `${request.city}, ` : ''}{request.countryCode} · {request.isPublic ? 'Public' : 'Private'}</p>
                             <p className="text-xs text-slate-500">Requested by {request.requester.email}</p>
                           </div>

@@ -29,7 +29,7 @@ export default function LandingPage() {
     <Shell title="Welcome to EduWorld" subtitle="A verified student social learning platform designed for fast collaboration.">
       <div className="space-y-6">
         <div className="card border-blue-300/20 bg-blue-500/5 p-5 sm:p-6">
-          <p className="text-sm leading-6 text-slate-300">
+          <p className="text-sm leading-6 text-slate-700">
             One product, one workflow: register, get reviewed, then access your feed, groups, resources, and exam preparation tools.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
@@ -41,8 +41,8 @@ export default function LandingPage() {
         <div className="grid gap-3 sm:grid-cols-2">
           {featureCards.map((card) => (
             <Link key={card.href} href={card.href} className="card p-5 transition hover:-translate-y-0.5">
-              <h2 className="text-base font-semibold text-slate-100">{card.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-400">{card.description}</p>
+              <h2 className="text-base font-semibold text-slate-900">{card.title}</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500">{card.description}</p>
               <span className="mt-4 inline-block text-sm font-medium text-blue-300">Open →</span>
             </Link>
           ))}
