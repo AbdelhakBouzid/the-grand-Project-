@@ -79,11 +79,11 @@ export default function SignupPage() {
       <form action={submit} className="mx-auto grid w-full max-w-md gap-4">
         <div className="card space-y-4 p-5 sm:p-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300">Email</label>
+            <label className="text-sm font-medium text-slate-700">Email</label>
             <input className="input" name="email" type="email" placeholder="you@institution.edu" required />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300">Password</label>
+            <label className="text-sm font-medium text-slate-700">Password</label>
             <input className="input" name="password" type="password" placeholder="Minimum 8 characters" required />
           </div>
           <button className="btn-primary w-full" disabled={isSubmitting}>{isSubmitting ? 'Creating account…' : 'Create account'}</button>

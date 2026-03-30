@@ -105,7 +105,7 @@ export default function ResourcesPage() {
   return (
     <Shell title="Educational Resources" subtitle="Share notes and useful links with your classmates.">
       <div className="space-y-6">
-        <form onSubmit={onCreateResource} className="card grid gap-3 bg-slate-900/45 p-4 sm:p-5">
+        <form onSubmit={onCreateResource} className="card grid gap-3 bg-white/70 p-4 sm:p-5">
           <h2 className="text-base font-semibold">Upload or link a resource</h2>
           <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Resource title" className="input" disabled={pendingApproval} />
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="textarea" disabled={pendingApproval} />
@@ -132,20 +132,20 @@ export default function ResourcesPage() {
 
         {loading ? (
           <div className="space-y-3">
-            <div className="h-24 animate-pulse rounded-xl bg-slate-800" />
-            <div className="h-24 animate-pulse rounded-xl bg-slate-800" />
+            <div className="h-24 animate-pulse rounded-xl bg-slate-200" />
+            <div className="h-24 animate-pulse rounded-xl bg-slate-200" />
           </div>
         ) : resources.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-600 bg-slate-900/40 p-8 text-center text-sm text-slate-400">No resources yet. Add one to help classmates.</div>
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 p-8 text-center text-sm text-slate-500">No resources yet. Add one to help classmates.</div>
         ) : (
           <ul className="space-y-3">
             {resources.map((resource) => (
               <li key={resource.id} className="card p-4 sm:p-5">
                 <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-slate-100">{resource.title}</h3>
+                  <h3 className="text-sm font-semibold text-slate-900">{resource.title}</h3>
                   <span className="text-xs text-slate-500">{resource.owner?.email ?? 'Unknown uploader'}</span>
                 </div>
-                <p className="mb-2 text-sm text-slate-400">{resource.description || 'No description provided.'}</p>
+                <p className="mb-2 text-sm text-slate-500">{resource.description || 'No description provided.'}</p>
                 {resource.files.length > 0 ? (
                   <ul className="list-disc space-y-1 pl-5 text-xs text-blue-300">
                     {resource.files.map((file) => (
