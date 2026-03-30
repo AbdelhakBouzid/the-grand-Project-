@@ -118,14 +118,14 @@ export default function ExamsPage() {
   return (
     <Shell title="Exam Archive" subtitle="Find past exams and practice by subject and year.">
       <div className="space-y-6">
-        <form onSubmit={applyFilters} className="card grid gap-3 bg-slate-50/80 p-4 sm:grid-cols-3 sm:p-5">
+        <form onSubmit={applyFilters} className="card grid gap-3 bg-slate-900/45 p-4 sm:grid-cols-3 sm:p-5">
           <input value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)} placeholder="Filter by subject" className="input" />
           <input value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} placeholder="Filter by year" className="input" />
           <button className="btn-secondary">Apply filters</button>
         </form>
 
         {canCreate ? (
-          <form onSubmit={onCreateExam} className="card grid gap-3 border-blue-100 bg-blue-50/70 p-4 sm:grid-cols-3 sm:p-5">
+          <form onSubmit={onCreateExam} className="card grid gap-3 bg-slate-900/45 bg-blue-500/10 p-4 sm:grid-cols-3 sm:p-5">
             <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Exam title" className="input" disabled={pendingApproval} />
             <input value={subject} onChange={(e) => setSubject(e.target.value)} required placeholder="Subject" className="input" disabled={pendingApproval} />
             <div className="flex gap-2">
@@ -148,20 +148,20 @@ export default function ExamsPage() {
 
         {loading ? (
           <div className="space-y-3">
-            <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
-            <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
+            <div className="h-24 animate-pulse rounded-xl bg-slate-800" />
+            <div className="h-24 animate-pulse rounded-xl bg-slate-800" />
           </div>
         ) : exams.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center text-sm text-slate-600">No exams found for the current filters.</div>
+          <div className="rounded-2xl border border-dashed border-slate-600 bg-slate-900/40 p-8 text-center text-sm text-slate-400">No exams found for the current filters.</div>
         ) : (
           <ul className="space-y-3">
             {exams.map((exam) => (
               <li key={exam.id} className="card p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-slate-800">{exam.title}</h3>
-                  <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">{exam.year}</span>
+                  <h3 className="text-sm font-semibold text-slate-100">{exam.title}</h3>
+                  <span className="rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-400">{exam.year}</span>
                 </div>
-                <p className="mt-1 text-sm text-slate-600">{exam.subject}</p>
+                <p className="mt-1 text-sm text-slate-400">{exam.subject}</p>
               </li>
             ))}
           </ul>

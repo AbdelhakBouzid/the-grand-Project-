@@ -158,18 +158,18 @@ export default function AdminReviewDetailPage({ params }: { params: { id: string
         {error ? <div className="status-note status-note-error">{error}</div> : null}
         {success ? <div className="status-note status-note-success">{success}</div> : null}
 
-        {loading ? <div className="h-24 animate-pulse rounded-xl bg-slate-100" /> : null}
+        {loading ? <div className="h-24 animate-pulse rounded-xl bg-slate-800" /> : null}
 
         {missing ? (
-          <div className="card border-dashed p-5 text-sm text-slate-600">
+          <div className="card border-dashed p-5 text-sm text-slate-400">
             This request is no longer pending or does not exist.
           </div>
         ) : null}
 
         {userRequest ? (
           <div className="card space-y-2 p-4">
-            <p className="text-sm font-semibold text-slate-900">Pending user</p>
-            <p className="text-sm text-slate-700">{userRequest.email}</p>
+            <p className="text-sm font-semibold text-slate-100">Pending user</p>
+            <p className="text-sm text-slate-300">{userRequest.email}</p>
             <p className="text-xs text-slate-500">Role: {userRequest.role}</p>
             <p className="text-xs text-slate-500">Institution: {userRequest.institution?.name ?? 'Not linked yet'}</p>
             <p className="text-xs text-slate-500">Submitted: {new Date(userRequest.createdAt).toLocaleString()}</p>
@@ -178,8 +178,8 @@ export default function AdminReviewDetailPage({ params }: { params: { id: string
 
         {institutionRequest ? (
           <div className="card space-y-2 p-4">
-            <p className="text-sm font-semibold text-slate-900">Pending institution request</p>
-            <p className="text-sm text-slate-700">{institutionRequest.name}</p>
+            <p className="text-sm font-semibold text-slate-100">Pending institution request</p>
+            <p className="text-sm text-slate-300">{institutionRequest.name}</p>
             <p className="text-xs text-slate-500">{institutionRequest.city ? `${institutionRequest.city}, ` : ''}{institutionRequest.countryCode}</p>
             <p className="text-xs text-slate-500">Type: {institutionRequest.isPublic ? 'Public' : 'Private'}</p>
             <p className="text-xs text-slate-500">Requester: {institutionRequest.requester.email}</p>
@@ -204,7 +204,7 @@ export default function AdminReviewDetailPage({ params }: { params: { id: string
           </>
         ) : null}
 
-        <Link href="/admin/reviews" className="inline-block text-sm font-medium text-blue-700 underline">Back to admin dashboard</Link>
+        <Link href="/admin/reviews" className="inline-block text-sm font-medium text-blue-300 underline">Back to admin dashboard</Link>
       </div>
     </Shell>
   );

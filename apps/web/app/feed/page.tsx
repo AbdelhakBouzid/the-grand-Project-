@@ -98,10 +98,10 @@ export default function FeedPage() {
   }
 
   return (
-    <Shell title="Community Feed" subtitle="Share updates, ask questions, and learn together.">
-      <div className="space-y-6">
-        <form onSubmit={onCreatePost} className="card grid gap-3 bg-slate-50/80 p-4 sm:p-5">
-          <label className="text-sm font-medium text-slate-700">Create a post</label>
+    <Shell title="Community Feed" subtitle="Share updates, ask questions, and learn with your institution.">
+      <div className="space-y-4">
+        <form onSubmit={onCreatePost} className="card grid gap-3 bg-slate-900/45 p-4 sm:p-5">
+          <label className="text-sm font-medium text-slate-300">Create a post</label>
           <textarea
             value={newPost}
             onChange={(event) => setNewPost(event.target.value)}
@@ -128,23 +128,21 @@ export default function FeedPage() {
 
         {loading ? (
           <div className="space-y-3">
-            <div className="h-28 animate-pulse rounded-xl bg-slate-100" />
-            <div className="h-28 animate-pulse rounded-xl bg-slate-100" />
-            <div className="h-28 animate-pulse rounded-xl bg-slate-100" />
+            <div className="h-28 animate-pulse rounded-xl bg-slate-800" />
+            <div className="h-28 animate-pulse rounded-xl bg-slate-800" />
+            <div className="h-28 animate-pulse rounded-xl bg-slate-800" />
           </div>
         ) : posts.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center text-sm text-slate-600">
-            No posts yet. Create the first post to start your institution feed.
-          </div>
+          <div className="empty-state">No posts yet. Create the first post to start your institution feed.</div>
         ) : (
           <ul className="space-y-3">
             {posts.map((post) => (
               <li key={post.id} className="card p-4 sm:p-5">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-slate-800">{post.user?.email ?? 'Unknown user'}</p>
+                  <p className="text-sm font-semibold text-slate-200">{post.user?.email ?? 'Unknown user'}</p>
                   <p className="text-xs text-slate-500">{new Date(post.createdAt).toLocaleString()}</p>
                 </div>
-                <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">{post.body}</p>
+                <p className="whitespace-pre-wrap text-sm leading-6 text-slate-300">{post.body}</p>
                 <div className="mt-4 flex gap-4 text-xs text-slate-500">
                   <span>{post._count?.comments ?? 0} comments</span>
                   <span>{post._count?.reactions ?? 0} reactions</span>
@@ -155,7 +153,7 @@ export default function FeedPage() {
         )}
 
         <div>
-          <Link className="text-sm font-medium text-blue-700 underline" href="/groups">
+          <Link className="text-sm font-semibold text-blue-300 underline" href="/groups">
             Continue to Groups
           </Link>
         </div>
