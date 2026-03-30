@@ -1,11 +1,17 @@
+import Link from 'next/link';
 import { Shell } from '../../components/shell';
 
 export default function PendingReviewPage() {
   return (
-    <Shell title="Pending Review" subtitle="Your account verification is under review.">
-      <div className="mx-auto max-w-xl space-y-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center">
-        <p className="text-base font-semibold text-slate-800">Thanks for submitting your details.</p>
-        <p className="text-sm leading-6 text-slate-600">We&apos;ll notify you once a reviewer has approved or rejected your request. You can safely close this page and return later.</p>
+    <Shell title="Pending Review" subtitle="Your account verification is currently being reviewed by the team.">
+      <div className="mx-auto flex max-w-xl flex-col gap-4">
+        <div className="card border-amber-300/25 bg-amber-500/5 p-6 text-center sm:p-8">
+          <p className="text-base font-semibold text-amber-100">Thanks for submitting your details.</p>
+          <p className="mt-2 text-sm leading-6 text-slate-300">
+            You&apos;ll be automatically unlocked once approved. Please return later or refresh this page from time to time.
+          </p>
+        </div>
+        <Link href="/login" className="btn-secondary mx-auto">Back to login</Link>
       </div>
     </Shell>
   );

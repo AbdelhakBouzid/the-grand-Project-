@@ -112,11 +112,11 @@ export default function GroupsPage() {
   return (
     <Shell title="Study Groups" subtitle="Create or join focused learning communities.">
       <div className="space-y-6">
-        <form onSubmit={onCreateGroup} className="card grid gap-3 bg-slate-50/80 p-4 sm:p-5">
+        <form onSubmit={onCreateGroup} className="card grid gap-3 bg-slate-900/45 p-4 sm:p-5">
           <h2 className="text-base font-semibold">Create a group</h2>
           <input value={name} onChange={(e) => setName(e.target.value)} required placeholder="Group name" className="input" disabled={pendingApproval} />
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="textarea" disabled={pendingApproval} />
-          <label className="flex items-center gap-2 text-sm text-slate-700">
+          <label className="flex items-center gap-2 text-sm text-slate-300">
             <input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} disabled={pendingApproval} />
             Private group
           </label>
@@ -134,20 +134,20 @@ export default function GroupsPage() {
 
         {loading ? (
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="h-32 animate-pulse rounded-xl bg-slate-100" />
-            <div className="h-32 animate-pulse rounded-xl bg-slate-100" />
+            <div className="h-32 animate-pulse rounded-xl bg-slate-800" />
+            <div className="h-32 animate-pulse rounded-xl bg-slate-800" />
           </div>
         ) : groups.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center text-sm text-slate-600">No groups yet. Create one to start collaborating.</div>
+          <div className="rounded-2xl border border-dashed border-slate-600 bg-slate-900/40 p-8 text-center text-sm text-slate-400">No groups yet. Create one to start collaborating.</div>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
             {groups.map((group) => (
               <li key={group.id} className="card p-4 sm:p-5">
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-slate-800">{group.name}</h3>
-                  <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">{group.isPrivate ? 'Private' : 'Public'}</span>
+                  <h3 className="text-sm font-semibold text-slate-100">{group.name}</h3>
+                  <span className="rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-400">{group.isPrivate ? 'Private' : 'Public'}</span>
                 </div>
-                <p className="mb-3 text-sm text-slate-600">{group.description || 'No description provided.'}</p>
+                <p className="mb-3 text-sm text-slate-400">{group.description || 'No description provided.'}</p>
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-slate-500">{group._count?.members ?? 0} members</p>
                   <button
@@ -163,7 +163,7 @@ export default function GroupsPage() {
           </ul>
         )}
 
-        <Link className="text-sm font-medium text-blue-700 underline" href="/resources">Explore Resources</Link>
+        <Link className="text-sm font-medium text-blue-300 underline" href="/resources">Explore Resources</Link>
       </div>
     </Shell>
   );

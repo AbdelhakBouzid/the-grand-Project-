@@ -202,15 +202,15 @@ export default function AdminReviewListPage() {
 
         {loading ? (
           <div className="space-y-3">
-            <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
-            <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
+            <div className="h-24 animate-pulse rounded-xl bg-slate-800" />
+            <div className="h-24 animate-pulse rounded-xl bg-slate-800" />
           </div>
         ) : (
           <>
             <section className="space-y-3">
-              <h2 className="text-base font-semibold text-slate-800">Pending users ({users.length})</h2>
+              <h2 className="text-base font-semibold text-slate-100">Pending users ({users.length})</h2>
               {users.length === 0 ? (
-                <p className="card border-dashed p-4 text-sm text-slate-600">No pending users.</p>
+                <p className="card border-dashed p-4 text-sm text-slate-400">No pending users.</p>
               ) : (
                 <ul className="space-y-3">
                   {users.map((user) => (
@@ -218,11 +218,11 @@ export default function AdminReviewListPage() {
                       <div className="space-y-3">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div>
-                            <p className="text-sm font-semibold text-slate-800">{user.email}</p>
+                            <p className="text-sm font-semibold text-slate-100">{user.email}</p>
                             <p className="text-xs text-slate-500">Role: {user.role} · Created: {new Date(user.createdAt).toLocaleString()}</p>
                             <p className="text-xs text-slate-500">Institution: {user.institution?.name ?? 'Not linked yet'}</p>
                           </div>
-                          <Link href={`/admin/reviews/${user.id}?type=user`} className="text-xs font-semibold text-blue-700 underline">
+                          <Link href={`/admin/reviews/${user.id}?type=user`} className="text-xs font-semibold text-blue-300 underline">
                             Open details
                           </Link>
                         </div>
@@ -248,9 +248,9 @@ export default function AdminReviewListPage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-base font-semibold text-slate-800">Pending institution requests ({institutionRequests.length})</h2>
+              <h2 className="text-base font-semibold text-slate-100">Pending institution requests ({institutionRequests.length})</h2>
               {institutionRequests.length === 0 ? (
-                <p className="card border-dashed p-4 text-sm text-slate-600">No pending institution requests.</p>
+                <p className="card border-dashed p-4 text-sm text-slate-400">No pending institution requests.</p>
               ) : (
                 <ul className="space-y-3">
                   {institutionRequests.map((request) => (
@@ -258,11 +258,11 @@ export default function AdminReviewListPage() {
                       <div className="space-y-3">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div>
-                            <p className="text-sm font-semibold text-slate-800">{request.name}</p>
+                            <p className="text-sm font-semibold text-slate-100">{request.name}</p>
                             <p className="text-xs text-slate-500">{request.city ? `${request.city}, ` : ''}{request.countryCode} · {request.isPublic ? 'Public' : 'Private'}</p>
                             <p className="text-xs text-slate-500">Requested by {request.requester.email}</p>
                           </div>
-                          <Link href={`/admin/reviews/${request.id}?type=institution`} className="text-xs font-semibold text-blue-700 underline">
+                          <Link href={`/admin/reviews/${request.id}?type=institution`} className="text-xs font-semibold text-blue-300 underline">
                             Open details
                           </Link>
                         </div>

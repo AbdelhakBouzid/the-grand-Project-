@@ -20,15 +20,15 @@ export default function VerificationPage() {
     <Shell title="Verification" subtitle="Upload your documents for manual reviewer validation.">
       <form action={submit} className="mx-auto grid w-full max-w-lg gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700">Institution ID</label>
+          <label className="text-sm font-medium text-slate-300">Institution ID</label>
           <input className="input" name="institutionId" placeholder="Institution UUID" required />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700">Note (optional)</label>
+          <label className="text-sm font-medium text-slate-300">Note (optional)</label>
           <textarea className="textarea" name="note" placeholder="Anything reviewers should know" />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-700">Supporting documents</label>
+          <label className="text-sm font-medium text-slate-300">Supporting documents</label>
           <input className="input" type="file" name="documents" accept=".pdf,.png,.jpg,.jpeg" multiple required />
         </div>
         <button className="btn-primary">Submit for review</button>
